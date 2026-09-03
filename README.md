@@ -1,6 +1,6 @@
 # Bookshelf Rebound
 
-[![npm version](https://img.shields.io/npm/v/bookshelf-rebound.svg?style=flat)](https://www.npmjs.com/package/bookshelf-rebound)
+[![npm next version](https://img.shields.io/npm/v/bookshelf-rebound/next.svg?label=npm%20next&style=flat)](https://www.npmjs.com/package/bookshelf-rebound)
 [![CI](https://github.com/derp42/bookshelf-rebound/actions/workflows/ci.yml/badge.svg)](https://github.com/derp42/bookshelf-rebound/actions/workflows/ci.yml)
 [![license](https://img.shields.io/npm/l/bookshelf-rebound.svg?style=flat)](LICENSE)
 
@@ -27,7 +27,7 @@ For the normal drop-in migration, replace the package and change only the module
 
 ```sh
 npm uninstall bookshelf
-npm install bookshelf-rebound
+npm install bookshelf-rebound@next
 ```
 
 ```js
@@ -37,7 +37,7 @@ const bookshelf = require('bookshelf-rebound')(knex)
 Applications that require a zero-source-change transition can install Bookshelf Rebound under npm's `bookshelf` alias:
 
 ```sh
-npm install bookshelf@npm:bookshelf-rebound
+npm install bookshelf@npm:bookshelf-rebound@next
 ```
 
 Existing `require('bookshelf')` calls then continue to resolve locally. The drop-in goal covers the application API; the supported Node.js and Knex versions intentionally differ from the abandoned `bookshelf@1.2.0` package.
@@ -56,7 +56,7 @@ You'll need to install a copy of [Knex](http://knexjs.org/), and either `mysql`,
 
 ```js
 $ npm install knex
-$ npm install bookshelf-rebound
+$ npm install bookshelf-rebound@next
 
 # Then add one of the following:
 $ npm install pg
