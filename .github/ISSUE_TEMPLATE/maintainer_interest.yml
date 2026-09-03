@@ -1,0 +1,36 @@
+name: Maintainer interest
+description: Express interest in sustained project maintenance
+title: "[Maintainer]: "
+labels: [maintainers-wanted]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you for considering sustained stewardship of Bookshelf Rebound. Maintainer access follows demonstrated, constructive participation rather than a single application.
+  - type: textarea
+    id: experience
+    attributes:
+      label: Relevant experience
+      description: Tell us about your experience with Bookshelf, Knex, supported databases, package maintenance, testing, or security work.
+    validations:
+      required: true
+  - type: textarea
+    id: interests
+    attributes:
+      label: Areas you would like to maintain
+      placeholder: Issue triage, PostgreSQL compatibility, releases, documentation, security, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: availability
+    attributes:
+      label: Expected availability
+      description: A rough, non-binding description is enough.
+    validations:
+      required: true
+  - type: checkboxes
+    id: governance
+    attributes:
+      label: Project expectations
+      options:
+        - label: I have read GOVERNANCE.md and agree to follow the Code of Conduct.
+          required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions and ideas
+    url: https://github.com/derp42/bookshelf-rebound/discussions
+    about: Ask for help or discuss the project's direction.
+  - name: Private security report
+    url: https://github.com/derp42/bookshelf-rebound/security/advisories/new
+    about: Report undisclosed vulnerabilities privately.

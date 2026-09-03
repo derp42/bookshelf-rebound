@@ -1,15 +1,46 @@
-# bookshelf.js
+# Bookshelf Rebound
 
-[![NPM Version](https://img.shields.io/npm/v/bookshelf.svg?style=flat)](https://www.npmjs.com/package/bookshelf)
-[![Build Status](https://api.travis-ci.org/bookshelf/bookshelf.svg?branch=master)](https://travis-ci.org/bookshelf/bookshelf)
-[![Dependency Status](https://david-dm.org/bookshelf/bookshelf/status.svg)](https://david-dm.org/bookshelf/bookshelf)
-[![devDependency Status](https://david-dm.org/bookshelf/bookshelf/dev-status.svg)](https://david-dm.org/bookshelf/bookshelf?type=dev)
+[![npm version](https://img.shields.io/npm/v/bookshelf-rebound.svg?style=flat)](https://www.npmjs.com/package/bookshelf-rebound)
+[![CI](https://github.com/derp42/bookshelf-rebound/actions/workflows/ci.yml/badge.svg)](https://github.com/derp42/bookshelf-rebound/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/bookshelf-rebound.svg?style=flat)](LICENSE)
 
-Bookshelf is a JavaScript ORM for Node.js, built on the [Knex](http://knexjs.org) SQL query builder. It features both Promise-based and traditional callback interfaces, transaction support, eager/nested-eager relation loading, polymorphic associations, and support for one-to-one, one-to-many, and many-to-many relations.
+> Bookshelf.js, rebound for modern Node.js and Knex.
 
-It is designed to work with PostgreSQL, MySQL, and SQLite3.
+Bookshelf Rebound is an independent, community-maintained continuation of [Bookshelf.js](https://github.com/bookshelf/bookshelf). It preserves Bookshelf's straightforward model API while updating its runtime, Knex integration, dependencies, tests, and release process.
 
-[Website and documentation](http://bookshelfjs.org). The project is [hosted on GitHub](http://github.com/bookshelf/bookshelf/), and has a comprehensive [test suite](https://travis-ci.org/bookshelf/bookshelf).
+Bookshelf is a JavaScript ORM built on the [Knex](https://knexjs.org/) SQL query builder. It features Promise and callback interfaces, transactions, eager and nested-eager relation loading, polymorphic associations, and one-to-one, one-to-many, and many-to-many relations. It is designed to work with PostgreSQL, MySQL/MariaDB, and SQLite3.
+
+Bookshelf Rebound began from the complete MIT-licensed Bookshelf.js history. The original author and contributors remain credited in the package metadata and Git history. This project is not presented as an official release by the original maintainers.
+
+## Release-candidate compatibility
+
+- Node.js 22 or newer
+- Knex 2.5.x
+- CommonJS, matching the original `require()` API
+- PostgreSQL, MySQL/MariaDB, and SQLite3 through the inherited integration suite
+
+The `2.0.0-rc` line intentionally prioritizes compatibility and security maintenance over new features. See [GOVERNANCE.md](GOVERNANCE.md) if you are interested in helping maintain the project.
+
+## Migrating from Bookshelf.js
+
+For the normal drop-in migration, replace the package and change only the module specifier:
+
+```sh
+npm uninstall bookshelf
+npm install bookshelf-rebound
+```
+
+```js
+const bookshelf = require('bookshelf-rebound')(knex)
+```
+
+Applications that require a zero-source-change transition can install Bookshelf Rebound under npm's `bookshelf` alias:
+
+```sh
+npm install bookshelf@npm:bookshelf-rebound
+```
+
+Existing `require('bookshelf')` calls then continue to resolve locally. The drop-in goal covers the application API; the supported Node.js and Knex versions intentionally differ from the abandoned `bookshelf@1.2.0` package.
 
 ## Introduction
 
@@ -25,7 +56,7 @@ You'll need to install a copy of [Knex](http://knexjs.org/), and either `mysql`,
 
 ```js
 $ npm install knex
-$ npm install bookshelf
+$ npm install bookshelf-rebound
 
 # Then add one of the following:
 $ npm install pg
@@ -47,7 +78,7 @@ const knex = require('knex')({
     charset  : 'utf8'
   }
 })
-const bookshelf = require('bookshelf')(knex)
+const bookshelf = require('bookshelf-rebound')(knex)
 
 // Defining models
 const User = bookshelf.model('User', {
@@ -60,7 +91,7 @@ This initialization should likely only ever happen once in your application. As 
 ```js
 // In a file named, e.g. bookshelf.js
 const knex = require('knex')(dbConfig)
-module.exports = require('bookshelf')(knex)
+module.exports = require('bookshelf-rebound')(knex)
 
 // elsewhere, to use the bookshelf client:
 const bookshelf = require('./bookshelf')
@@ -79,7 +110,7 @@ const knex = require('knex')({
   client: 'mysql',
   connection: process.env.MYSQL_DATABASE_CONNECTION
 })
-const bookshelf = require('bookshelf')(knex)
+const bookshelf = require('bookshelf-rebound')(knex)
 
 const User = bookshelf.model('User', {
   tableName: 'users',
@@ -106,7 +137,9 @@ new User({id: 1}).fetch({withRelated: ['posts.tags']}).then((user) => {
 })
 ```
 
-## Official Plugins
+## Bookshelf.js plugins
+
+Many existing plugins operate on an initialized Bookshelf instance and may remain compatible. Treat each plugin as independently maintained and verify it against Bookshelf Rebound before production use.
 
 * [Virtuals](https://github.com/bookshelf/virtuals-plugin): Define virtual properties on your model to compute new values.
 * [Case Converter](https://github.com/bookshelf/case-converter-plugin): Handles the conversion between the database's snake_cased and a model's camelCased properties automatically.
@@ -135,17 +168,11 @@ new User({id: 1}).fetch({withRelated: ['posts.tags']}).then((user) => {
 
 ## Support
 
-Have questions about the library? Come join us in the [#bookshelf freenode IRC channel](http://webchat.freenode.net/?channels=bookshelf) for support on [knex.js](http://knexjs.org/) and bookshelf.js, or post an issue on [Stack Overflow](http://stackoverflow.com/questions/tagged/bookshelf.js).
+Use [GitHub Discussions](https://github.com/derp42/bookshelf-rebound/discussions) for usage questions and [GitHub Issues](https://github.com/derp42/bookshelf-rebound/issues) for reproducible bugs. Please follow [SECURITY.md](SECURITY.md) for private vulnerability reports.
 
 ## Contributing
 
-If you want to contribute to Bookshelf you'll usually want to report an issue or submit a
-pull-request. For this purpose the [online repository](https://github.com/bookshelf/bookshelf/) is
-available on GitHub.
-
-For further help setting up your local development environment or learning how you can contribute to
-Bookshelf you should read the [Contributing document](https://github.com/bookshelf/bookshelf/blob/master/.github/CONTRIBUTING.md)
-available on GitHub.
+Bug fixes, compatibility reports, documentation improvements, and co-maintainers are welcome. Read the [contributing guide](.github/CONTRIBUTING.md) and [governance notes](GOVERNANCE.md) before opening a pull request.
 
 ## F.A.Q.
 
@@ -174,7 +201,7 @@ const knex = require('knex')({
   client: 'mysql',
   connection: process.env.MYSQL_DATABASE_CONNECTION
 })
-const bookshelf = require('bookshelf')(knex)
+const bookshelf = require('bookshelf-rebound')(knex)
 
 // Debugging a single query
 new User({id: 1}).fetch({debug: true, withRelated: ['posts.tags']}).then(user => {
@@ -196,8 +223,7 @@ process.stderr.on('data', (data) => {
 
 ### How do I run the test suite?
 
-See the [CONTRIBUTING](https://github.com/bookshelf/bookshelf/blob/master/.github/CONTRIBUTING.md#running-the-tests)
-document on GitHub.
+See the [contributing guide](.github/CONTRIBUTING.md#running-the-tests).
 
 ### Can I use Bookshelf outside of Node.js?
 

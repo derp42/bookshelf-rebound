@@ -1,0 +1,50 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Bookshelf Rebound
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not disclose security vulnerabilities here. Follow SECURITY.md for private reporting.
+  - type: input
+    id: version
+    attributes:
+      label: Bookshelf Rebound version
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Node.js, Knex, and database versions
+      placeholder: Node 22.23.2, Knex 2.5.1, PostgreSQL 16.15
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the smallest model, query, schema, and data needed to reproduce the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: original
+    attributes:
+      label: Does bookshelf@1.2.0 behave differently?
+      options:
+        - Not tested
+        - Yes
+        - No
+    validations:
+      required: true

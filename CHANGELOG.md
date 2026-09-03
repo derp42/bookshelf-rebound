@@ -1,5 +1,23 @@
 ## Change Log
 
+**2.0.0-rc.1** <small>_Unreleased_</small>
+
+Bookshelf Rebound begins as an independent, community-maintained continuation of Bookshelf.js.
+
+#### Compatibility
+
+- Preserve the Bookshelf `1.2.0` application API as the drop-in compatibility target.
+- Require Node.js 22 or newer.
+- Support Knex `>=2.5.1 <3.0.0`.
+- Continue the PostgreSQL, MySQL/MariaDB, and SQLite integration suites.
+
+#### Maintenance
+
+- Refresh runtime and development dependencies, based on the modernization work contributed upstream in [bookshelf/bookshelf#2137](https://github.com/bookshelf/bookshelf/pull/2137).
+- Replace the retired Travis configuration with GitHub Actions on current Node.js releases and PostgreSQL/MariaDB services.
+- Add explicit security, governance, contribution, and provenance-based release policies.
+- Publish under the new `bookshelf-rebound` package name while preserving original MIT attribution and Git history.
+
 **1.2.0** <small>_Jun 07, 2020_</small> - [Diff](https://github.com/bookshelf/bookshelf/compare/1.1.1...1.2.0)
 
 #### Features
