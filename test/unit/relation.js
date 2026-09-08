@@ -169,10 +169,16 @@ module.exports = function() {
         return knex('rights').insert([{id: 10}, {id: 11}, {id: 12}]);
       })
       .then(function() {
-        return knex('morph_sites').insert({id: 1, name: 'Parsed site'});
+        return knex('morph_sites').insert([
+          {id: 1, name: 'Parsed site'},
+          {id: 2, name: 'Second site'}
+        ]);
       })
       .then(function() {
-        return knex('parsed_photos').insert({id: 1, imageable_id: 1, imageable_type: 'site'});
+        return knex('parsed_photos').insert([
+          {id: 1, imageable_id: 1, imageable_type: 'site'},
+          {id: 3, imageable_id: 2, imageable_type: 'site'}
+        ]);
       });
   });
 
@@ -500,6 +506,33 @@ module.exports = function() {
       return RawPhoto.fetchAll({withRelated: ['imageable']}).then(function(photos) {
         expect(photos.at(0).related('imageable').get('name')).to.equal('Parsed site');
       });
+    });
+
+    it('refetches eager morphTo targets using metadata from each owning model', function() {
+      return RawPhoto.fetchAll({withRelated: ['imageable']})
+        .then(function(photos) {
+          const imageables = [photos.get(1).related('imageable'), photos.get(3).related('imageable')];
+
+          expect(imageables[0].relatedData.parentFk).to.equal(1);
+          expect(imageables[1].relatedData.parentFk).to.equal(2);
+
+          return Promise.all(imageables.map(function(imageable) {
+            return imageable.fetch();
+          })).then(function(fetched) {
+            expect(fetched[0].attributes).to.eql({id: 1, name: 'Parsed site'});
+            expect(fetched[1].attributes).to.eql({id: 2, name: 'Second site'});
+            return imageables;
+          });
+        })
+        .then(function(imageables) {
+          return Promise.all(imageables.map(function(imageable) {
+            return imageable.refresh();
+          }));
+        })
+        .then(function(refreshed) {
+          expect(refreshed[0].attributes).to.eql({id: 1, name: 'Parsed site'});
+          expect(refreshed[1].attributes).to.eql({id: 2, name: 'Second site'});
+        });
     });
 
     it('pairs null-foreign-key to-one relations without another query', function() {
