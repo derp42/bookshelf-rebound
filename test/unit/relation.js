@@ -62,6 +62,42 @@ module.exports = function() {
       return this.hasOne(Tail, 'id_cat');
     }
   });
+  const MorphSite = bookshelf.Model.extend({tableName: 'morph_sites'});
+  const ParsedPhoto = bookshelf.Model.extend({
+    tableName: 'parsed_photos',
+    parse: function(attributes) {
+      return Object.keys(attributes).reduce(function(parsed, key) {
+        parsed[key.replace(/_([a-z])/g, function(match, letter) {
+          return letter.toUpperCase();
+        })] = attributes[key];
+        return parsed;
+      }, {});
+    },
+    format: function(attributes) {
+      return Object.keys(attributes).reduce(function(formatted, key) {
+        formatted[key.replace(/[A-Z]/g, function(letter) {
+          return '_' + letter.toLowerCase();
+        })] = attributes[key];
+        return formatted;
+      }, {});
+    },
+    imageable: function() {
+      return this.morphTo('imageable', [MorphSite, 'site']);
+    }
+  });
+  const RawPhoto = bookshelf.Model.extend({
+    tableName: 'parsed_photos',
+    parse: function(attributes) {
+      const keys = Object.keys(attributes);
+      if (keys.length === 1 && keys[0].indexOf('imageable_') === 0) {
+        throw new Error('raw attributes should not be reparsed');
+      }
+      return attributes;
+    },
+    imageable: function() {
+      return this.morphTo('imageable', [MorphSite, 'site']);
+    }
+  });
 
   before(function() {
     return knex.schema
@@ -99,6 +135,15 @@ module.exports = function() {
         table.integer('id_cat').notNullable();
         table.string('color');
       })
+      .createTable('morph_sites', function(table) {
+        table.increments();
+        table.string('name');
+      })
+      .createTable('parsed_photos', function(table) {
+        table.increments();
+        table.integer('imageable_id');
+        table.string('imageable_type');
+      })
       .then(function() {
         return knex('targets').insert([{id: 10}, {id: 11}, {id: 12}]);
       })
@@ -121,6 +166,12 @@ module.exports = function() {
       })
       .then(function() {
         return knex('rights').insert([{id: 10}, {id: 11}, {id: 12}]);
+      })
+      .then(function() {
+        return knex('morph_sites').insert({id: 1, name: 'Parsed site'});
+      })
+      .then(function() {
+        return knex('parsed_photos').insert({id: 1, imageable_id: 1, imageable_type: 'site'});
       });
   });
 
@@ -399,6 +450,20 @@ module.exports = function() {
           expect(tails[0].attributes).to.eql({id: 1, id_cat: 1, color: 'white'});
           expect(tails[1].attributes).to.eql({id: 2, id_cat: 2, color: 'brown'});
         });
+    });
+
+    it('eager loads morphTo using parsed type and id attributes', function() {
+      return ParsedPhoto.fetchAll({withRelated: ['imageable']}).then(function(photos) {
+        const photo = photos.at(0);
+        expect(photo.attributes).to.include({imageableId: 1, imageableType: 'site'});
+        expect(photo.related('imageable').attributes).to.eql({id: 1, name: 'Parsed site'});
+      });
+    });
+
+    it('does not parse morphTo keys that are already present', function() {
+      return RawPhoto.fetchAll({withRelated: ['imageable']}).then(function(photos) {
+        expect(photos.at(0).related('imageable').get('name')).to.equal('Parsed site');
+      });
     });
   });
 };
