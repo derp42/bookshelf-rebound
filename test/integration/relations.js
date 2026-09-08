@@ -97,9 +97,11 @@ module.exports = function(Bookshelf) {
         });
 
         it('serializes a missing "hasOne" relationship as null (site -> meta)', function() {
-          return new Site({id: 3}).fetch({withRelated: ['meta']}).then(function(site) {
-            expect(site.toJSON()).to.have.property('meta', null);
-          });
+          return new Site({id: 3})
+            .fetch({withRelated: ['meta']})
+            .then(function(site) {
+              expect(site.toJSON()).to.have.property('meta', null);
+            });
         });
 
         it('eager loads "hasMany" relationships correctly (site -> authors, blogs)', function() {

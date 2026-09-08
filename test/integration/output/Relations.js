@@ -433,6 +433,7 @@ module.exports = {
       result: {
         id: 3,
         name: 'backbonejs.org',
+        meta: null,
         blogs: [],
         authors: []
       }
@@ -441,6 +442,7 @@ module.exports = {
       result: {
         id: 3,
         name: 'backbonejs.org',
+        meta: null,
         authors: [],
         blogs: []
       }
@@ -449,6 +451,7 @@ module.exports = {
       result: {
         id: 3,
         name: 'backbonejs.org',
+        meta: null,
         blogs: [],
         authors: []
       }
