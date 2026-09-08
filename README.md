@@ -21,6 +21,17 @@ Bookshelf Rebound began from the complete MIT-licensed Bookshelf.js history. The
 
 The `2.0.0-rc` line intentionally prioritizes compatibility and security maintenance over new features. See [GOVERNANCE.md](GOVERNANCE.md) if you are interested in helping maintain the project.
 
+## Handling untrusted attributes
+
+Bookshelf Rebound does not provide application authorization or automatic mass-assignment protection. Never pass an untrusted request body directly to a model constructor, `set`, or `save`. Select the fields that the current caller is allowed to change before they reach the model:
+
+```js
+const {displayName, email} = request.body
+await User.forge({displayName, email}).save()
+```
+
+A model's `hidden` and `visible` settings affect serialization only. They do not prevent attributes from being written. Enforce role- and operation-specific write allowlists in the application or a validation layer, and use database constraints for data integrity.
+
 ## Migrating from Bookshelf.js
 
 For the normal drop-in migration, replace the package and change only the module specifier:
