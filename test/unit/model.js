@@ -51,6 +51,7 @@ module.exports = function() {
 
         it('should merge the updated attributes on the existing model', () => {
           const model = new Model({oldProp: 'b'});
+          model.id = 1;
           model.sync = () => {
             return {
               update: () => {
@@ -63,6 +64,40 @@ module.exports = function() {
           return model.save(null, {method: 'update'}).then(function(updatedModel) {
             expect(parse).to.have.been.calledWith({newProp: 'a'});
             expect(updatedModel.toJSON()).to.eql({oldProp: 'b', newProp: 'a'});
+          });
+        });
+
+        it('does not auto-refresh an update without a stable model identity', () => {
+          const model = new Model({status: 'archived'});
+          model.sync = () => {
+            return {
+              update: () => Promise.resolve(2)
+            };
+          };
+          model.refresh = sinon.stub().resolves(model);
+
+          return model.save(null, {method: 'update'}).then(function(updatedModel) {
+            expect(updatedModel).to.equal(model);
+            expect(model.refresh).not.to.have.been.called;
+          });
+        });
+
+        it('does not hydrate a broad update from the first returned row', () => {
+          const model = new Model({status: 'archived'});
+          model.sync = () => {
+            return {
+              update: () =>
+                Promise.resolve([
+                  {id: 1, status: 'archived'},
+                  {id: 2, status: 'archived'}
+                ])
+            };
+          };
+          model.refresh = sinon.stub().resolves(model);
+
+          return model.save(null, {method: 'update'}).then(function(updatedModel) {
+            expect(updatedModel.attributes).to.eql({status: 'archived'});
+            expect(model.refresh).not.to.have.been.called;
           });
         });
       });

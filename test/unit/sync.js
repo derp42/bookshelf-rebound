@@ -250,6 +250,20 @@ module.exports = function() {
     });
 
     describe('update', function() {
+      it('does not request returned rows for an update without a stable model identity', function() {
+        var model = stubModel();
+        model.id = null;
+        model._query.client = {config: {client: 'pg'}};
+        model._query._statements.push({grouping: 'where'});
+        model._query.returning = sinon.spy();
+        model._query.update = sinon.stub().resolves(2);
+        var sync = new Sync(model);
+
+        return sync.update({status: 'archived'}).then(function() {
+          model._query.returning.should.not.have.been.called;
+        });
+      });
+
       it("doesn't try to update the primary key if it hasn't changed", function() {
         var sync = new Sync(stubModel());
         _.extend(sync.query, {
