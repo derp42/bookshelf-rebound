@@ -160,7 +160,7 @@ module.exports = function(Bookshelf) {
 
         equal(
           _knex.toString(),
-          'select distinct `doctormeta`.* from `doctormeta` where `doctormeta`.`doctoring_id` = 1 limit 1'
+          'select `doctormeta`.* from `doctormeta` where `doctormeta`.`doctoring_id` = 1 limit 1'
         );
       });
 
@@ -333,7 +333,7 @@ module.exports = function(Bookshelf) {
         relatedData.selectConstraints(_knex, {});
 
         var sql =
-          "select distinct `photos`.* from `photos` where `photos`.`imageable_id` = 1 and `photos`.`imageable_type` = 'doctors'";
+          "select `photos`.* from `photos` where `photos`.`imageable_id` = 1 and `photos`.`imageable_type` = 'doctors'";
 
         equal(_knex.toString(), sql);
       });
@@ -363,7 +363,7 @@ module.exports = function(Bookshelf) {
 
         equal(
           _knex.toString(),
-          "select distinct `translations`.* from `translations` where `translations`.`code` = 'en' limit 1"
+          "select `translations`.* from `translations` where `translations`.`code` = 'en' limit 1"
         );
       });
 
@@ -430,7 +430,7 @@ module.exports = function(Bookshelf) {
 
         equal(
           _knex.toString(),
-          "select distinct `translations`.* from `translations` where `translations`.`code` = 'en'"
+          "select `translations`.* from `translations` where `translations`.`code` = 'en'"
         );
       });
 
@@ -495,7 +495,7 @@ module.exports = function(Bookshelf) {
         // init the select constraints
         relatedData.selectConstraints(_knex, {});
 
-        var sql = "select distinct `locales`.* from `locales` where `locales`.`isoCode` = 'en' limit 1";
+        var sql = "select `locales`.* from `locales` where `locales`.`isoCode` = 'en' limit 1";
 
         equal(_knex.toString(), sql);
       });

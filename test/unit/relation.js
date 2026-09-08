@@ -78,6 +78,37 @@ module.exports = function() {
   });
 
   describe('Relation', function() {
+    it('only adds distinct to joined PostgreSQL relations', function() {
+      const pgKnex = require('knex')({client: 'pg'});
+      const pgBookshelf = require(path.resolve(basePath, 'bookshelf'))(pgKnex);
+      const CompletionDate = pgBookshelf.Model.extend({tableName: 'completion_dates'});
+      const Role = pgBookshelf.Model.extend({tableName: 'roles'});
+      const Applicant = pgBookshelf.Model.extend({
+        tableName: 'applicants',
+        completionDate: function() {
+          return this.hasOne(CompletionDate, 'applicant_id');
+        },
+        roles: function() {
+          return this.belongsToMany(Role);
+        }
+      });
+      const relation = new Applicant({id: 7}).completionDate();
+      const query = relation.query();
+
+      relation.relatedData.selectConstraints(query, {});
+
+      expect(query.toSQL().sql).to.equal(
+        'select "completion_dates".* from "completion_dates" where "completion_dates"."applicant_id" = ? limit ?'
+      );
+
+      const joinedRelation = new Applicant({id: 7}).roles();
+      const joinedQuery = joinedRelation.query();
+      joinedRelation.relatedData.selectConstraints(joinedQuery, {});
+      expect(joinedQuery.toSQL().sql).to.match(/^select distinct /);
+
+      return pgKnex.destroy();
+    });
+
     it('accepts an actual Knex transaction handle', function() {
       return knex.transaction(function(transaction) {
         expect(function() {
