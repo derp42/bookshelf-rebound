@@ -217,6 +217,42 @@ module.exports = function() {
     });
 
     describe('first', function() {
+      it('does not add model attributes to an explicitly constrained query', function() {
+        var model = stubModel();
+        model._query.where({status: 'active'});
+        var sync = new Sync(model);
+
+        sync.select = function() {
+          expect(this.syncing.getWhereParts()).to.eql([{status: 'active'}]);
+        };
+
+        return sync.first({status: 'archived'});
+      });
+
+      it('treats an explicit query as complete with a custom idAttribute', function() {
+        var model = stubModel('token');
+        model._query.where({token: 'explicit-token'});
+        var sync = new Sync(model);
+
+        sync.select = function() {
+          expect(this.syncing.getWhereParts()).to.eql([{token: 'explicit-token'}]);
+        };
+
+        return sync.first({token: 'model-token', status: 'archived'});
+      });
+
+      it('ignores object model state when an explicit query supplies the constraint', function() {
+        var model = stubModel();
+        model._query.where({status: 'active'});
+        var sync = new Sync(model);
+
+        sync.select = function() {
+          expect(this.syncing.getWhereParts()).to.eql([{status: 'active'}]);
+        };
+
+        return sync.first({settings: {access: 'admin'}});
+      });
+
       it('uses only the primary key when the model also contains object or array attributes', function() {
         var sync = new Sync(stubModel());
 
