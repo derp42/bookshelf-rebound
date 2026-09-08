@@ -360,5 +360,81 @@ module.exports = function() {
         return sync.update({id: 'updated', name: 'something'});
       });
     });
+
+    describe('columns added by fetching hooks', function() {
+      const knex = require('knex')({
+        client: 'sqlite3',
+        connection: {filename: ':memory:'},
+        useNullAsDefault: true
+      });
+      const bookshelf = require(path.resolve(basePath, 'bookshelf'))(knex);
+      const Thing = bookshelf.Model.extend({tableName: 'things_1442'});
+      const Parent = bookshelf.Model.extend({
+        tableName: 'parents_1442',
+        things: function() {
+          return this.hasMany(Thing, 'parent_id');
+        }
+      });
+
+      before(function() {
+        return knex.schema
+          .createTable('parents_1442', function(table) {
+            table.increments();
+            table.string('name');
+          })
+          .createTable('things_1442', function(table) {
+            table.increments();
+            table.integer('parent_id');
+            table.string('column_a');
+            table.string('column_b');
+          })
+          .then(function() {
+            return knex('parents_1442').insert({id: 1, name: 'parent'});
+          })
+          .then(function() {
+            return knex('things_1442').insert({id: 1, parent_id: 1, column_a: 'kept', column_b: 'hidden'});
+          });
+      });
+
+      after(function() {
+        return knex.destroy();
+      });
+
+      it('respects columns added by a fetching event', function() {
+        const thing = new Thing({id: 1});
+        thing.on('fetching', function(model, columns, options) {
+          options.query.columns('id', 'column_a');
+        });
+
+        return thing.fetch().then(function(result) {
+          expect(result.toJSON()).to.eql({id: 1, column_a: 'kept'});
+        });
+      });
+
+      it('respects columns added by a fetching:collection event', function() {
+        const thing = new Thing();
+        thing.on('fetching:collection', function(collection, columns, options) {
+          options.query.columns('id', 'column_a');
+        });
+
+        return thing.fetchAll().then(function(result) {
+          expect(result.toJSON()).to.eql([{id: 1, column_a: 'kept'}]);
+        });
+      });
+
+      it('preserves explicit eager relation columns', function() {
+        return new Parent({id: 1})
+          .fetch({
+            withRelated: {
+              things: function(query) {
+                query.columns('things_1442.id', 'things_1442.parent_id', 'things_1442.column_a');
+              }
+            }
+          })
+          .then(function(result) {
+            expect(result.related('things').toJSON()).to.eql([{id: 1, parent_id: 1, column_a: 'kept'}]);
+          });
+      });
+    });
   });
 };
