@@ -26,6 +26,7 @@ Bookshelf Rebound begins as an independent, community-maintained continuation of
 #### Bug fixes
 
 - Rebuild eager relation metadata from each owning model so related records retain the correct parent constraint, including `morphTo` targets that are fetched or refreshed after eager loading.
+- Retain the private key needed to pair ordinary projected `hasMany`, `hasOne`, and `belongsTo` eager loads, then remove it before parsing, events, and serialization.
 
 **1.2.0** <small>_Jun 07, 2020_</small> - [Diff](https://github.com/bookshelf/bookshelf/compare/1.1.1...1.2.0)
 

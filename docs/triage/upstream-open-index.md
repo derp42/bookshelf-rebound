@@ -23,9 +23,9 @@ was changed during this review.
 | Priority | Count | Disposition | Count |
 | --- | ---: | --- | ---: |
 | P0 | 3 | FIX | 24 |
-| P1 | 37 | ADD | 28 |
+| P1 | 37 | ADD | 27 |
 | P2 | 64 | VERIFY | 9 |
-| P3 | 85 | ALREADY_FIXED | 43 |
+| P3 | 85 | ALREADY_FIXED | 44 |
 | P4 | 35 | DUPLICATE | 35 |
 | **Total** | **224** | REJECT | 85 |
 | | | **Total** | **224** |
@@ -135,7 +135,7 @@ resolved.
 | #1707 parent-by-child filtering | #937, #1675, #2090 | Add a deliberate relation-existence API; current workaround is explicit `EXISTS`/JOIN SQL. |
 | #1895 connection-independent model definitions | #1408, #1881 | Add a safe per-instance factory pattern, not mutable global connection state. |
 | #1939 empty to-one serialization | #2016, #2061 | Fix consistently in the 2.x line. |
-| #2037 eager projections and pairing keys | #1808 | Retain minimal mapping keys internally and document the projection contract. |
+| #2037 eager projections and pairing keys | #1808 | Resolved for ordinary direct projections by `3f31377`; the internal key is stripped before application-visible model state. |
 | #2091 non-identity update refresh | #2086, #2100, #2101 | Enforce a stable-identity contract before automatic refresh. |
 | #2092 grouped pagination count | #2067; related PR #2096 | Replace Knex private-statement reconstruction with a grouped subquery design. |
 | #2104 explicit graph persistence | #83, #1979 | Future explicit transactional API only; no silent cascading `save()`. |

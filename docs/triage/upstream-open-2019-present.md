@@ -30,9 +30,9 @@ The review considered each issue's body, labels, and available comments; linked 
 | P3 | 19 |
 | P4 | 5 |
 | FIX | 8 |
-| ADD | 7 |
+| ADD | 6 |
 | VERIFY | 2 |
-| ALREADY_FIXED | 7 |
+| ALREADY_FIXED | 8 |
 | DUPLICATE | 15 |
 | REJECT | 14 |
 | **Total rows** | **53** |
@@ -56,7 +56,7 @@ The review considered each issue's body, labels, and available comments; linked 
 | [#2033 — Using REPLACE instead of INSERT](https://github.com/bookshelf/bookshelf/issues/2033) | MySQL-specific upsert | P2 | REJECT | MySQL `REPLACE` deletes then inserts and has surprising trigger/FK/identity effects; it is not a portable save method. Use Knex's documented [`onConflict().merge()` or `onConflict().ignore()`](https://knexjs.org/guide/query-builder.html#onconflict), or a deliberately raw dialect-specific query. |
 | [#2034 — How can I chain static properties](https://github.com/bookshelf/bookshelf/issues/2034) | Usage support | P3 | REJECT | The issue thread contains the supported pattern: instance methods returning `this.query(callback)` remain chainable, whereas returning the Knex builder exits the Bookshelf chain. No library defect or new static-scope system is demonstrated. |
 | [#2035 — Event based Model](https://github.com/bookshelf/bookshelf/issues/2035) | Usage support / model extension | P3 | REJECT | Bookshelf already supports ES class extension, plugins, lifecycle events, and overriding methods while calling `super`. The posted code manually reimplements save and mishandles async flow; that is application guidance, not a core defect. |
-| [#2037 — withRelated must contain key](https://github.com/bookshelf/bookshelf/issues/2037) | Relations / projections | P2 | ADD | Eager assembly genuinely needs parent/foreign keys, but requiring callers to repeat hidden implementation columns is error-prone. Automatically retain the minimal mapping keys internally, then honor serialization visibility so helper keys need not leak. |
+| [#2037 — withRelated must contain key](https://github.com/bookshelf/bookshelf/issues/2037) | Relations / projections | P2 | ALREADY_FIXED | Commit `3f31377` retains one qualified key under a private alias for simple projected `hasMany`, `hasOne`, and `belongsTo` eager loads, uses it for per-owner pairing, and removes it before parse, fetched events, and serialization. Joined relations keep their existing pivot-key path; aggregate, raw, and distinct SQL is deliberately not rewritten. Node 22 regressions cover two owners and both relation directions, and the Knex 2/3 multi-dialect CI matrix passes. |
 | [#2038 — Override visibility options of nested relations](https://github.com/bookshelf/bookshelf/issues/2038) | Serialization / visibility | P2 | ADD | Current options cascade uniformly into nested serialization and cannot safely target one relation; a global override can accidentally expose parent secrets. Add relation/path-scoped serialization options with security-focused tests rather than merging every model's hidden-name list. |
 | [#2039 — belongsToMany truncates duplicate data](https://github.com/bookshelf/bookshelf/issues/2039) | Data modeling / collections | P3 | DUPLICATE | Same repeated-target/pivot behavior as #571 and #1923. Use the supported eager-fetch options `{merge: false, remove: false}` when each pivot-qualified association must remain present; otherwise the default collection identity intentionally deduplicates by target primary key. |
 | [#2042 — Non-existent Posts variable in front-page code](https://github.com/bookshelf/bookshelf/issues/2042) | Documentation | P3 | DUPLICATE | Exact duplicate of #1239: the current README and generated docs still call `hasMany(Posts)` while only `Post` is defined. Fix once and add the runnable snippet check under the canonical issue. |

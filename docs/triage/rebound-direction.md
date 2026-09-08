@@ -126,8 +126,9 @@ Rank additive work as follows:
    narrow `whereHas`/`whereDoesntHave` API using `EXISTS`; do not make eager
    callbacks implicitly filter parents.
 5. **Automatic eager-pairing keys**
-   ([#2037](https://github.com/bookshelf/bookshelf/issues/2037)): internally
-   retain only required keys without leaking helper columns in serialization.
+   ([#2037](https://github.com/bookshelf/bookshelf/issues/2037)): delivered for
+   ordinary direct projections in `3f31377`; internally retain only the required
+   key without leaking it through model state or serialization.
 6. **Path-scoped relation visibility**
    ([#2038](https://github.com/bookshelf/bookshelf/issues/2038)): avoid global
    nested overrides that can expose parent secrets.
