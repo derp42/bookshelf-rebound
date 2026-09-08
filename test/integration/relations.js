@@ -96,9 +96,9 @@ module.exports = function(Bookshelf) {
             .then(checkTest(this));
         });
 
-        it('does not load "hasOne" relationship when it doesn\'t exist (site -> meta)', function() {
+        it('serializes a missing "hasOne" relationship as null (site -> meta)', function() {
           return new Site({id: 3}).fetch({withRelated: ['meta']}).then(function(site) {
-            expect(site.toJSON()).to.not.have.property('meta');
+            expect(site.toJSON()).to.have.property('meta', null);
           });
         });
 
