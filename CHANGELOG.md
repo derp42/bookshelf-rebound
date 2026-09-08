@@ -18,6 +18,10 @@ Bookshelf Rebound begins as an independent, community-maintained continuation of
 - Add explicit security, governance, contribution, and provenance-based release policies.
 - Publish under the new `bookshelf-rebound` package name while preserving original MIT attribution and Git history.
 
+#### Security
+
+- Remove the inherited `bookshelfjs.org` custom-domain claim and replace the abandoned FlyptoX website link with its GitHub repository.
+
 **1.2.0** <small>_Jun 07, 2020_</small> - [Diff](https://github.com/bookshelf/bookshelf/compare/1.1.1...1.2.0)
 
 #### Features

@@ -12,7 +12,7 @@ Rebound's newer dependency and test baseline.
 | [#2095 Remove development files from npm package](https://github.com/bookshelf/bookshelf/pull/2095) | P3 | ALREADY_FIXED | Rebound uses an explicit `package.json#files` allowlist and the published tarball was independently inspected. No patch is needed. |
 | [#2096 Preserve `fetchPage` row count when an event adds attributes](https://github.com/bookshelf/bookshelf/pull/2096) | P2 | REDESIGN/FIX | The defect remains, but accepting the first object key is fragile. Alias the internal count to a stable private key and read that key regardless of event-added attributes; add a regression for `fetched:collection`. Coordinate this with #2092's grouped-count redesign and #2067's raw-group fixture. |
 | [#2107 Fix local Docker test configuration](https://github.com/bookshelf/bookshelf/pull/2107) | P3 | ALREADY_FIXED | Rebound replaced the Compose setup with PostgreSQL 16 and MariaDB 11.8 services used by CI. |
-| [#2108 Replace hijacked FlyptoX domain link](https://github.com/bookshelf/bookshelf/pull/2108) | P1 | PORT | Rebound's README still links the abandoned external domain. Replace it with the repository URL (or remove the showcase entry) so project documentation does not send users to an unsafe unrelated site. |
+| [#2108 Replace hijacked FlyptoX domain link](https://github.com/bookshelf/bookshelf/pull/2108) | P1 | ALREADY_FIXED | Rebound's README omits the abandoned external domain, the inherited generated index links only to the source repository, and `docs/CNAME` no longer claims the upstream documentation domain. A CI/prepublish check prevents either unsafe target from returning. |
 | [#2116 `returning` option in `save`](https://github.com/bookshelf/bookshelf/pull/2116) | P2 | REDESIGN/ADD | Selecting returned columns can be useful, but the patch clears model state and has no non-`RETURNING` contract. Design this as an explicit optimization with primary-key/state invariants and cross-dialect tests before adding it. |
 | [#2119 Pass options when fetching related data](https://github.com/bookshelf/bookshelf/pull/2119) | P2 | REDESIGN/ADD | Passing bounded context to relation factories enables tenant-aware relations, but arbitrary fetch options can couple authorization to mutable request data. Define a documented context channel and prove nested eager behavior; never present it as the database authorization boundary. |
 | [#2120 Update Knex version](https://github.com/bookshelf/bookshelf/pull/2120) | P0 | SUPERSEDED | Superseded by #2125/#2127/#2137 and Rebound's Knex 2.5.1 baseline. |
@@ -27,6 +27,5 @@ Rebound's newer dependency and test baseline.
 
 1. Treat #2122's source-level filter bypass as a release-blocking fix; dependency updates do not resolve it.
 2. Port and extend #2093 for `belongsToMany().count()`.
-3. Remove or replace the unsafe FlyptoX URL from #2108.
-4. Rework #2096 around an explicit count alias instead of object-key order.
-5. Leave #2116 and #2119 as designed additions, not opportunistic merges.
+3. Rework #2096 around an explicit count alias instead of object-key order.
+4. Leave #2116 and #2119 as designed additions, not opportunistic merges.
