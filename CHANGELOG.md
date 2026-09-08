@@ -8,7 +8,7 @@ Bookshelf Rebound begins as an independent, community-maintained continuation of
 
 - Preserve the Bookshelf `1.2.0` application API as the drop-in compatibility target.
 - Require Node.js 22 or newer.
-- Support Knex `>=2.5.1 <3.0.0`.
+- Support Knex `^2.5.1 || ^3.3.0`, with both lines exercised by the full integration suite.
 - Verify PostgreSQL 16 with `pg`, MariaDB 11.8 with `mysql`, MySQL 8.4 with `mysql2`, and SQLite3 in CI.
 
 #### Maintenance

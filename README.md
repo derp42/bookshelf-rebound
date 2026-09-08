@@ -15,7 +15,7 @@ Bookshelf Rebound began from the complete MIT-licensed Bookshelf.js history. The
 ## Release-candidate compatibility
 
 - Node.js 22 or newer
-- Knex 2.5.x
+- Knex 2.5.x or 3.3.x
 - CommonJS, matching the original `require()` API
 - PostgreSQL 16 with `pg`, MariaDB 11.8 with `mysql`, MySQL 8.4 with `mysql2`, and SQLite3 through the integration suite
 

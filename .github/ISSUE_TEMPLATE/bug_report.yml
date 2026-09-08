@@ -16,7 +16,7 @@ body:
     id: runtime
     attributes:
       label: Node.js, Knex, and database versions
-      placeholder: Node 22.23.2, Knex 2.5.1, PostgreSQL 16.15
+      placeholder: Node 22.23.2, Knex 3.3.0, PostgreSQL 16.15
     validations:
       required: true
   - type: textarea
