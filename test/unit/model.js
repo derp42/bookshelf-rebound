@@ -217,6 +217,55 @@ module.exports = function() {
       });
     });
 
+    describe('typed zero-row persistence errors', function() {
+      const knex = require('knex')({
+        client: 'sqlite3',
+        connection: {filename: ':memory:'},
+        useNullAsDefault: true
+      });
+      const bookshelf = require(path.resolve(basePath, 'bookshelf'))(knex);
+      const Record = bookshelf.Model.extend({tableName: 'records_2089'});
+
+      before(function() {
+        return knex.schema.createTable('records_2089', function(table) {
+          table.increments();
+          table.string('name');
+        });
+      });
+
+      after(function() {
+        return knex.destroy();
+      });
+
+      it('supports a typed Bluebird catch for a zero-row update', function() {
+        var caught;
+
+        return new Record({id: 404, name: 'missing'})
+          .save({name: 'still missing'}, {patch: true})
+          .catch(Record.NoRowsUpdatedError, function(error) {
+            caught = error;
+          })
+          .then(function() {
+            expect(caught).to.be.instanceOf(Record.NoRowsUpdatedError);
+            expect(caught.message).to.equal('No Rows Updated');
+          });
+      });
+
+      it('supports a typed Bluebird catch for a zero-row delete', function() {
+        var caught;
+
+        return new Record({id: 404})
+          .destroy()
+          .catch(Record.NoRowsDeletedError, function(error) {
+            caught = error;
+          })
+          .then(function() {
+            expect(caught).to.be.instanceOf(Record.NoRowsDeletedError);
+            expect(caught.message).to.equal('No Rows Deleted');
+          });
+      });
+    });
+
     describe('#fetchPage() grouped counts', function() {
       const knex = require('knex')({
         client: 'sqlite3',
