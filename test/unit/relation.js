@@ -465,5 +465,53 @@ module.exports = function() {
         expect(photos.at(0).related('imageable').get('name')).to.equal('Parsed site');
       });
     });
+
+    it('serializes missing eager-loaded to-one relations as null', function() {
+      return knex('tails')
+        .del()
+        .then(function() {
+          return knex('cats').del();
+        })
+        .then(function() {
+          return knex('cats').insert([{id: 1, name: 'Felix'}, {id: 2, name: 'Milo'}, {id: 3, name: 'Otis'}]);
+        })
+        .then(function() {
+          return knex('tails').insert([
+            {id: 1, id_cat: 1, color: 'black'},
+            {id: 2, id_cat: 999, color: 'gray'}
+          ]);
+        })
+        .then(function() {
+          return Cat.fetchAll({withRelated: ['tail']});
+        })
+        .then(function(cats) {
+          const missingTail = cats.at(1).related('tail');
+          expect(missingTail).to.be.instanceOf(Tail);
+          expect(missingTail.attributes).to.eql({});
+          const json = cats.toJSON();
+          expect(json[0].tail).to.eql({id: 1, id_cat: 1, color: 'black'});
+          expect(json[1].tail).to.equal(null);
+          expect(json[2].tail).to.equal(null);
+          expect(cats.at(1).toJSON()).to.have.property('tail', null);
+          expect(cats.at(1).toJSON({visible: ['id', 'tail']})).to.eql({id: 2, tail: null});
+          expect(cats.at(1).toJSON({hidden: ['tail']})).not.to.have.property('tail');
+          expect(cats.at(1).toJSON({shallow: true})).not.to.have.property('tail');
+          return Tail.fetchAll({withRelated: ['cat']});
+        })
+        .then(function(tails) {
+          expect(tails.toJSON()[0].cat).to.eql({id: 1, name: 'Felix'});
+          expect(tails.toJSON()[1].cat).to.equal(null);
+          return Cat.where('id', '>', 1).fetchAll({withRelated: ['tail']});
+        })
+        .then(function(catsWithoutTails) {
+          expect(catsWithoutTails.toJSON()).to.eql([
+            {id: 2, name: 'Milo', tail: null},
+            {id: 3, name: 'Otis', tail: null}
+          ]);
+          const draft = new Cat({id: 4});
+          draft.related('tail').set({color: 'white'});
+          expect(draft.toJSON().tail).to.eql({color: 'white'});
+        });
+    });
   });
 };

@@ -453,6 +453,16 @@ module.exports = function() {
           var omitNew = testModel.toJSON({omitNew: true});
           deepEqual(omitNew, null);
         });
+
+        it('preserves null relations unless {omitNew: true} is passed', function() {
+          testModel.relations = {
+            missing: {toJSON: function() { return null; }}
+          };
+
+          expect(testModel.toJSON()).to.have.property('missing', null);
+          expect(testModel.toJSON({omitNew: false})).to.have.property('missing', null);
+          expect(testModel.toJSON({omitNew: true})).not.to.have.property('missing');
+        });
       });
 
       describe('with "visible" option', function() {
