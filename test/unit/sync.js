@@ -73,9 +73,40 @@ module.exports = function() {
         resetQuery: function() {}
       };
 
-      new Sync(mockModel, {lock: 'forUpdate', transacting: 'something'});
+      new Sync(mockModel, {
+        lock: 'forUpdate',
+        transacting: {isTransaction: true, client: {transacting: true}}
+      });
 
       setLock.should.have.been.called;
+    });
+
+    it('rejects the misspelled transaction option', function() {
+      var mockModel = {
+        query: function() {
+          return {};
+        },
+        resetQuery: function() {}
+      };
+
+      expect(function() {
+        new Sync(mockModel, {transaction: {client: {transacting: true}}});
+      }).to.throw(TypeError, 'Unknown option "transaction". Use "transacting" instead.');
+    });
+
+    it('rejects an invalid transacting handle', function() {
+      var setTransaction = sinon.spy();
+      var mockModel = {
+        query: function() {
+          return {transacting: setTransaction};
+        },
+        resetQuery: function() {}
+      };
+
+      expect(function() {
+        new Sync(mockModel, {transacting: {client: {transacting: false}}});
+      }).to.throw(TypeError, 'The "transacting" option must be a Knex transaction.');
+      setTransaction.should.not.have.been.called;
     });
 
     it('ignores the lock option if called without a transaction', function() {

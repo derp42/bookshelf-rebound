@@ -19,4 +19,5 @@ describe('Unit Tests', function () {
   require('./unit/events')();
   require('./unit/sync')();
   require('./unit/model')();
+  require('./unit/relation')();
 });
