@@ -9,6 +9,29 @@ module.exports = function() {
 
   describe('Model', function() {
     describe('#save()', function() {
+      ['insert', 'update'].forEach(function(method) {
+        it('forwards withSchema to the automatic refresh after ' + method, function() {
+          const model = new Model({id: 1, name: 'Ada'});
+          const sync = {};
+          sync[method] = function() {
+            return Promise.resolve(method === 'insert' ? [1] : 1);
+          };
+          model.sync = function() {
+            return sync;
+          };
+          model.refresh = sinon.stub().resolves(model);
+
+          return model.save(null, {method: method, withSchema: 'tenant'}).then(function() {
+            expect(model.refresh).to.have.been.calledOnce;
+            deepEqual(model.refresh.firstCall.args[0], {
+              silent: true,
+              transacting: undefined,
+              withSchema: 'tenant'
+            });
+          });
+        });
+      });
+
       it('should clone the passed in `options` object', function() {
         var model = new Model();
         var options = {
