@@ -217,6 +217,70 @@ module.exports = function() {
       });
     });
 
+    describe('#fetchPage() grouped counts', function() {
+      const knex = require('knex')({
+        client: 'sqlite3',
+        connection: {filename: ':memory:'},
+        useNullAsDefault: true
+      });
+      const bookshelf = require(path.resolve(basePath, 'bookshelf'))(knex);
+      const Activity = bookshelf.Model.extend({tableName: 'activities_2092'});
+
+      before(function() {
+        return knex.schema
+          .createTable('activities_2092', function(table) {
+            table.increments();
+            table.string('occurred_at');
+            table.string('category');
+            table.integer('amount');
+          })
+          .then(function() {
+            return knex('activities_2092').insert([
+              {occurred_at: '2024-01-01', category: 'alpha', amount: 1},
+              {occurred_at: '2024-01-15', category: 'alpha', amount: 2},
+              {occurred_at: '2024-02-01', category: 'beta', amount: 3},
+              {occurred_at: '2025-01-01', category: 'beta', amount: 4}
+            ]);
+          });
+      });
+
+      after(function() {
+        return knex.destroy();
+      });
+
+      it('counts aliases produced by raw selects and grouped by name', function() {
+        return Activity.forge()
+          .query(function(query) {
+            query.select(
+              knex.raw("strftime('%Y', occurred_at) as year"),
+              knex.raw("strftime('%m', occurred_at) as month")
+            );
+            query.sum('amount as total');
+            query.groupBy('year', 'month');
+          })
+          .fetchPage({page: 1, pageSize: 2})
+          .then(function(result) {
+            expect(result).to.have.length(2);
+            expect(result.pagination).to.eql({page: 1, pageSize: 2, rowCount: 3, pageCount: 2});
+          });
+      });
+
+      it('counts rows from a groupByRaw query', function() {
+        return Activity.forge()
+          .query(function(query) {
+            query.select('category');
+            query.sum('amount as total');
+            query.groupByRaw('category');
+          })
+          .fetchPage({page: 1, pageSize: 10})
+          .then(function(result) {
+            expect(result).to.have.length(2);
+            expect(result.pagination.rowCount).to.equal(2);
+            expect(result.pagination.pageCount).to.equal(1);
+          });
+      });
+    });
+
     describe('#timestamp()', function() {
       it('will set the updated_at and the created_at attributes to a new date for new models', function() {
         var newModel = new Model({}, {hasTimestamps: true});
