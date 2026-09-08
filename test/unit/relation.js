@@ -60,6 +60,9 @@ module.exports = function() {
     tableName: 'cats',
     tail: function() {
       return this.hasOne(Tail, 'id_cat');
+    },
+    tails: function() {
+      return this.hasMany(Tail, 'id_cat');
     }
   });
   const MorphSite = bookshelf.Model.extend({tableName: 'morph_sites'});
@@ -500,6 +503,94 @@ module.exports = function() {
         expect(photo.attributes).to.include({imageableId: 1, imageableType: 'site'});
         expect(photo.related('imageable').attributes).to.eql({id: 1, name: 'Parsed site'});
       });
+    });
+
+    it('retains private pairing keys for projected eager relations', function() {
+      return knex('tails')
+        .del()
+        .then(function() {
+          return knex('cats').del();
+        })
+        .then(function() {
+          return knex('cats').insert([
+            {id: 1, name: 'Felix'},
+            {id: 2, name: 'Milo'}
+          ]);
+        })
+        .then(function() {
+          return knex('tails').insert([
+            {id: 1, id_cat: 1, color: 'black'},
+            {id: 2, id_cat: 1, color: 'white'},
+            {id: 3, id_cat: 2, color: 'orange'}
+          ]);
+        })
+        .then(function() {
+          return Cat.fetchAll({
+            withRelated: [
+              {
+                tails: function(query) {
+                  query.column('id', 'color');
+                }
+              }
+            ]
+          });
+        })
+        .then(function(cats) {
+          expect(cats.at(0).related('tails').toJSON()).to.eql([
+            {id: 1, color: 'black'},
+            {id: 2, color: 'white'}
+          ]);
+          expect(cats.at(1).related('tails').toJSON()).to.eql([{id: 3, color: 'orange'}]);
+
+          return Cat.fetchAll({
+            withRelated: [
+              {
+                tail: function(query) {
+                  query.column('color');
+                }
+              }
+            ]
+          });
+        })
+        .then(function(cats) {
+          expect(cats.at(0).related('tail').toJSON()).to.eql({color: 'black'});
+          expect(cats.at(1).related('tail').toJSON()).to.eql({color: 'orange'});
+
+          return Tail.fetchAll({
+            withRelated: [
+              {
+                cat: function(query) {
+                  query.column('name');
+                }
+              }
+            ]
+          });
+        })
+        .then(function(tails) {
+          expect(tails.at(0).related('cat').toJSON()).to.eql({name: 'Felix'});
+          expect(tails.at(1).related('cat').toJSON()).to.eql({name: 'Felix'});
+          expect(tails.at(2).related('cat').toJSON()).to.eql({name: 'Milo'});
+          tails.forEach(function(tail) {
+            expect(tail.related('cat').attributes).not.to.have.property('__bookshelf_rebound_eager_pairing_key__');
+          });
+        })
+        .finally(function() {
+          return knex('tails').where({id: 3}).del();
+        });
+    });
+
+    it('does not add pairing keys to aggregate eager projections', function() {
+      const relation = new Cat({id: 1}).tails();
+      const query = relation.query();
+
+      relation.relatedData.selectConstraints(query, {
+        parentResponse: [{id: 1}],
+        _beforeFn: function(builder) {
+          builder.count('* as total');
+        }
+      });
+
+      expect(query.toSQL().sql).not.to.contain('__bookshelf_rebound_eager_pairing_key__');
     });
 
     it('does not parse morphTo keys that are already present', function() {
