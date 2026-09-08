@@ -16,6 +16,14 @@ module.exports = function() {
       return this.belongsToMany(Target);
     }
   });
+  const CustomTarget = bookshelf.Model.extend({tableName: 'custom_targets', idAttribute: 'slug'});
+  const CustomParent = bookshelf.Model.extend({
+    tableName: 'custom_parents',
+    idAttribute: 'code',
+    targets: function() {
+      return this.belongsToMany(CustomTarget, 'custom_links', 'owner_code', 'target_slug', 'code', 'slug');
+    }
+  });
   const Right = bookshelf.Model.extend({tableName: 'rights'});
   const Join = bookshelf.Model.extend({tableName: 'lefts_rights'});
   var destroyingCount = 0;
@@ -57,6 +65,26 @@ module.exports = function() {
 
   before(function() {
     return knex.schema
+      .createTable('targets', function(table) {
+        table.increments();
+        table.string('name');
+      })
+      .createTable('parents_targets', function(table) {
+        table.integer('parent_id').notNullable();
+        table.integer('target_id').notNullable();
+      })
+      .createTable('custom_targets', function(table) {
+        table.string('slug').primary();
+        table.string('name');
+      })
+      .createTable('custom_links', function(table) {
+        table.string('owner_code').notNullable();
+        table.string('target_slug').notNullable();
+      })
+      .createTable('rights', function(table) {
+        table.increments();
+        table.string('name');
+      })
       .createTable('lefts_rights', function(table) {
         table.increments();
         table.integer('left_id').notNullable();
@@ -70,6 +98,29 @@ module.exports = function() {
         table.increments();
         table.integer('id_cat').notNullable();
         table.string('color');
+      })
+      .then(function() {
+        return knex('targets').insert([{id: 10}, {id: 11}, {id: 12}]);
+      })
+      .then(function() {
+        return knex('parents_targets').insert([
+          {parent_id: 1, target_id: 10},
+          {parent_id: 1, target_id: 11},
+          {parent_id: 2, target_id: 12}
+        ]);
+      })
+      .then(function() {
+        return knex('custom_targets').insert([{slug: 'a'}, {slug: 'b'}, {slug: 'c'}]);
+      })
+      .then(function() {
+        return knex('custom_links').insert([
+          {owner_code: 'owner-a', target_slug: 'a'},
+          {owner_code: 'owner-a', target_slug: 'b'},
+          {owner_code: 'owner-b', target_slug: 'c'}
+        ]);
+      })
+      .then(function() {
+        return knex('rights').insert([{id: 10}, {id: 11}, {id: 12}]);
       });
   });
 
@@ -131,6 +182,79 @@ module.exports = function() {
             expect(error.message).to.equal('Unknown option "transaction". Use "transacting" instead.');
           }
         );
+    });
+
+    describe('relation counts', function() {
+      it('constrains a belongsToMany count through its join table', function() {
+        return new Parent({id: 1})
+          .targets()
+          .count()
+          .then(function(count) {
+            expect(count).to.equal(2);
+          });
+      });
+
+      it('uses custom belongsToMany keys for the count constraint', function() {
+        return new CustomParent({code: 'owner-a'})
+          .targets()
+          .count()
+          .then(function(count) {
+            expect(count).to.equal(2);
+          });
+      });
+
+      it('constrains a through relation count', function() {
+        return knex('lefts_rights')
+          .del()
+          .then(function() {
+            return knex('lefts_rights').insert([
+              {left_id: 1, right_id: 10},
+              {left_id: 1, right_id: 11},
+              {left_id: 2, right_id: 12}
+            ]);
+          })
+          .then(function() {
+            return new Left({id: 1}).rights().count();
+          })
+          .then(function(count) {
+            expect(count).to.equal(2);
+          });
+      });
+
+      ['pg', 'mysql'].forEach(function(client) {
+        it('compiles the belongsToMany count constraint for ' + client, function() {
+          const dialectKnex = require('knex')({client: client});
+          let sql;
+          dialectKnex.client.runner = function(builder) {
+            return {
+              run: function() {
+                sql = builder.toSQL().sql;
+                return Promise.resolve([{count: 2}]);
+              }
+            };
+          };
+          const dialectBookshelf = require(path.resolve(basePath, 'bookshelf'))(dialectKnex);
+          const DialectTarget = dialectBookshelf.Model.extend({tableName: 'targets'});
+          const DialectParent = dialectBookshelf.Model.extend({
+            tableName: 'parents',
+            targets: function() {
+              return this.belongsToMany(DialectTarget);
+            }
+          });
+
+          return new DialectParent({id: 1})
+            .targets()
+            .count()
+            .then(function(count) {
+              expect(count).to.equal(2);
+              expect(sql).to.match(/inner join [`"]parents_targets[`"] on/);
+              expect(sql).to.match(/where [`"]parents_targets[`"].[`"]parent_id[`"] = \?/);
+            })
+            .finally(function() {
+              return dialectKnex.destroy();
+            });
+        });
+      });
     });
 
     describe('through detach', function() {
