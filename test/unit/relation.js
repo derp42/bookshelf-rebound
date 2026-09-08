@@ -41,13 +41,36 @@ module.exports = function() {
       return this.belongsToMany(Right).through(HookJoin);
     }
   });
+  var Cat;
+  const Tail = bookshelf.Model.extend({
+    tableName: 'tails',
+    cat: function() {
+      return this.belongsTo(Cat, 'id_cat');
+    }
+  });
+  Cat = bookshelf.Model.extend({
+    tableName: 'cats',
+    tail: function() {
+      return this.hasOne(Tail, 'id_cat');
+    }
+  });
 
   before(function() {
-    return knex.schema.createTable('lefts_rights', function(table) {
-      table.increments();
-      table.integer('left_id').notNullable();
-      table.integer('right_id').notNullable();
-    });
+    return knex.schema
+      .createTable('lefts_rights', function(table) {
+        table.increments();
+        table.integer('left_id').notNullable();
+        table.integer('right_id').notNullable();
+      })
+      .createTable('cats', function(table) {
+        table.increments();
+        table.string('name');
+      })
+      .createTable('tails', function(table) {
+        table.increments();
+        table.integer('id_cat').notNullable();
+        table.string('color');
+      });
   });
 
   after(function() {
@@ -187,6 +210,40 @@ module.exports = function() {
             expect(rows).to.have.length(2);
           });
       });
+    });
+
+    it('saves a hasOne model loaded through a parent collection', function() {
+      return knex('tails')
+        .del()
+        .then(function() {
+          return knex('cats').del();
+        })
+        .then(function() {
+          return knex('cats').insert([
+            {id: 1, name: 'Felix'},
+            {id: 2, name: 'Milo'}
+          ]);
+        })
+        .then(function() {
+          return knex('tails').insert([
+            {id: 1, id_cat: 1, color: 'black'},
+            {id: 2, id_cat: 2, color: 'orange'}
+          ]);
+        })
+        .then(function() {
+          return Cat.fetchAll({withRelated: ['tail']});
+        })
+        .then(function(cats) {
+          const felixTail = cats.at(0).related('tail');
+          const miloTail = cats.at(1).related('tail');
+          expect(felixTail.relatedData.parentFk).to.equal(1);
+          expect(miloTail.relatedData.parentFk).to.equal(2);
+          return Promise.all([felixTail.save({color: 'white'}), miloTail.save({color: 'brown'})]);
+        })
+        .then(function(tails) {
+          expect(tails[0].attributes).to.eql({id: 1, id_cat: 1, color: 'white'});
+          expect(tails[1].attributes).to.eql({id: 2, id_cat: 2, color: 'brown'});
+        });
     });
   });
 };
