@@ -17,7 +17,7 @@ Bookshelf Rebound began from the complete MIT-licensed Bookshelf.js history. The
 - Node.js 22 or newer
 - Knex 2.5.x
 - CommonJS, matching the original `require()` API
-- PostgreSQL, MySQL/MariaDB, and SQLite3 through the inherited integration suite
+- PostgreSQL 16 with `pg`, MariaDB 11.8 with `mysql`, MySQL 8.4 with `mysql2`, and SQLite3 through the integration suite
 
 The `2.0.0-rc` line intentionally prioritizes compatibility and security maintenance over new features. See [GOVERNANCE.md](GOVERNANCE.md) if you are interested in helping maintain the project.
 
@@ -63,7 +63,7 @@ It's a lean object-relational mapper, allowing you to drop down to the raw Knex 
 
 ## Installation
 
-You'll need to install a copy of [Knex](http://knexjs.org/), and either `mysql`, `pg`, or `sqlite3` from npm.
+You'll need to install a copy of [Knex](https://knexjs.org/), plus the database driver for your application. Use `mysql2` for new MySQL applications; the legacy `mysql` driver remains tested for existing MySQL/MariaDB applications.
 
 ```js
 $ npm install knex
@@ -71,16 +71,17 @@ $ npm install bookshelf-rebound@next
 
 # Then add one of the following:
 $ npm install pg
-$ npm install mysql
+$ npm install mysql2
+$ npm install mysql # Legacy MySQL/MariaDB applications
 $ npm install sqlite3
 ```
 
-The Bookshelf library is initialized by passing an initialized [Knex](http://knexjs.org/) client instance. The [Knex documentation](http://knexjs.org/) provides a number of examples for different databases.
+The Bookshelf library is initialized by passing an initialized [Knex](https://knexjs.org/) client instance. The [Knex documentation](https://knexjs.org/) provides a number of examples for different databases.
 
 ```js
 // Setting up the database connection
 const knex = require('knex')({
-  client: 'mysql',
+  client: 'mysql2',
   connection: {
     host     : '127.0.0.1',
     user     : 'your_database_user',
@@ -99,11 +100,11 @@ const User = bookshelf.model('User', {
 
 ### Preserving MySQL BIGINT identifiers
 
-JavaScript numbers cannot exactly represent every MySQL `BIGINT`. Configure both options inside Knex's `connection` object to keep large identifiers as strings instead of losing precision in the `mysql` driver:
+JavaScript numbers cannot exactly represent every MySQL `BIGINT`. Configure both options inside Knex's `connection` object to keep large identifiers as strings instead of losing precision in the tested `mysql2` and `mysql` drivers:
 
 ```js
 const knex = require('knex')({
-  client: 'mysql',
+  client: 'mysql2',
   connection: {
     // host, user, password, database, etc.
     supportBigNumbers: true,
