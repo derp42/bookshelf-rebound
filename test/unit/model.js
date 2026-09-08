@@ -281,6 +281,52 @@ module.exports = function() {
       });
     });
 
+    describe('#count() with grouping', function() {
+      const knex = require('knex')({
+        client: 'sqlite3',
+        connection: {filename: ':memory:'},
+        useNullAsDefault: true
+      });
+      const bookshelf = require(path.resolve(basePath, 'bookshelf'))(knex);
+      const Entry = bookshelf.Model.extend({tableName: 'entries_1461'});
+
+      before(function() {
+        return knex.schema
+          .createTable('entries_1461', function(table) {
+            table.increments();
+            table.string('category');
+          })
+          .then(function() {
+            return knex('entries_1461').insert([{category: 'alpha'}, {category: 'alpha'}, {category: 'beta'}]);
+          });
+      });
+
+      after(function() {
+        return knex.destroy();
+      });
+
+      it('returns zero when a grouped count has no rows', function() {
+        return Entry.forge()
+          .where('category', 'missing')
+          .query('groupBy', 'category')
+          .count()
+          .then(function(count) {
+            expect(count).to.equal(0);
+          });
+      });
+
+      it('preserves a non-empty grouped count', function() {
+        return Entry.forge()
+          .query(function(query) {
+            query.groupBy('category').orderBy('category');
+          })
+          .count()
+          .then(function(count) {
+            expect(count).to.equal(2);
+          });
+      });
+    });
+
     describe('#timestamp()', function() {
       it('will set the updated_at and the created_at attributes to a new date for new models', function() {
         var newModel = new Model({}, {hasTimestamps: true});
