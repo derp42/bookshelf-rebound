@@ -4,22 +4,23 @@ module.exports = function(Bookshelf) {
   describe('MySQL BIGINT relations', function() {
     var storageId = '6227351521051279360';
     var connection = Bookshelf.knex.client.config.connection;
+    var mysqlClient = Bookshelf.knex.client.config.client;
     var bigNumberKnex = Knex({
-      client: 'mysql',
+      client: mysqlClient,
       connection: Object.assign({}, connection, {
         supportBigNumbers: true,
         bigNumberStrings: false
       })
     });
     var stringOnlyKnex = Knex({
-      client: 'mysql',
+      client: mysqlClient,
       connection: Object.assign({}, connection, {
         supportBigNumbers: false,
         bigNumberStrings: true
       })
     });
     var bigNumberStringKnex = Knex({
-      client: 'mysql',
+      client: mysqlClient,
       connection: Object.assign({}, connection, {
         supportBigNumbers: true,
         bigNumberStrings: true

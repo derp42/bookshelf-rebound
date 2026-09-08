@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 module.exports = function(Bookshelf) {
   var Knex = require('knex');
   var config = require(process.env.BOOKSHELF_TEST || './helpers/config');
+  var mysqlClient = process.env.MYSQL_CLIENT || 'mysql';
   var pg = require('knex')({client: 'postgres', connection: config.postgres});
   var sqlite3 = require('knex')({
     client: 'sqlite3',
@@ -11,7 +12,7 @@ module.exports = function(Bookshelf) {
     useNullAsDefault: true
   });
   var mysql = require('knex')({
-    client: 'mysql',
+    client: mysqlClient,
     connection: config.mysql,
     pool: {
       afterCreate: function(connection, callback) {
