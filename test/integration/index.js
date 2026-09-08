@@ -69,6 +69,7 @@ module.exports = function(Bookshelf) {
       // Only testing this against mysql for now, just so the toString is reliable...
       if (dialect === 'mysql') {
         require('./relation')(bookshelf);
+        require('./bigint')(bookshelf);
       } else if (dialect === 'postgresql') {
         require('./json')(bookshelf);
       }

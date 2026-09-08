@@ -97,6 +97,23 @@ const User = bookshelf.model('User', {
 })
 ```
 
+### Preserving MySQL BIGINT identifiers
+
+JavaScript numbers cannot exactly represent every MySQL `BIGINT`. Configure both options inside Knex's `connection` object to keep large identifiers as strings instead of losing precision in the `mysql` driver:
+
+```js
+const knex = require('knex')({
+  client: 'mysql',
+  connection: {
+    // host, user, password, database, etc.
+    supportBigNumbers: true,
+    bigNumberStrings: true
+  }
+})
+```
+
+Keep these identifiers as strings in application code. `supportBigNumbers` alone returns only values outside JavaScript's safe integer range as strings, while `bigNumberStrings` is ignored unless `supportBigNumbers` is also enabled. Using both options gives `BIGINT` and `DECIMAL` columns a consistent string representation. Bookshelf does not coerce identifiers or recover precision already lost by the database driver.
+
 This initialization should likely only ever happen once in your application. As it creates a connection pool for the current database, you should use the `bookshelf` instance returned throughout your library. You'll need to store this instance created by the initialize somewhere in the application so you can reference it. A common pattern to follow is to initialize the client in a module so you can easily reference it later:
 
 ```js
