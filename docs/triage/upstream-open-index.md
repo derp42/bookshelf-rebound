@@ -1,6 +1,6 @@
 # Upstream open-issue triage: consolidated index
 
-Snapshot date: 2026-09-03.
+Snapshot date: 2026-09-03. Rebound disposition status is current through 2026-09-08.
 
 This index consolidates every issue and pull request still open in
 `bookshelf/bookshelf` at the snapshot. The four issue registers contain 224
@@ -22,10 +22,10 @@ was changed during this review.
 
 | Priority | Count | Disposition | Count |
 | --- | ---: | --- | ---: |
-| P0 | 3 | FIX | 25 |
+| P0 | 3 | FIX | 24 |
 | P1 | 37 | ADD | 28 |
 | P2 | 64 | VERIFY | 9 |
-| P3 | 85 | ALREADY_FIXED | 42 |
+| P3 | 85 | ALREADY_FIXED | 43 |
 | P4 | 35 | DUPLICATE | 35 |
 | **Total** | **224** | REJECT | 85 |
 | | | **Total** | **224** |
@@ -36,27 +36,24 @@ marked already fixed when current code and dependencies remove it.
 
 ## Security decision
 
-There is one unresolved release-blocking security fix:
+All three P0 security decisions are resolved for the current release candidate:
 
-1. [#2122](https://github.com/bookshelf/bookshelf/issues/2122) is still
-   reproducible independently of the patched Knex version. `Sync.first`
-   silently discards a plain-object fetch attribute and can turn the request
-   into an unconstrained `SELECT ... LIMIT 1`. Reject unsafe constraint values
-   rather than dropping them, then cover object/array payloads and JSON-column
-   refresh behavior across the supported dialects.
-
-The other two P0 reports do not require a new source patch:
-
+- [#2122](https://github.com/bookshelf/bookshelf/issues/2122) is resolved by
+  commits `324d628` and `1780d92`. `Sync.first` now rejects object/array model
+  attributes before they can be silently dropped into an unconstrained first-row
+  query, while preserving scalar-primary-key refresh and explicit query constraints.
+  Dialect-neutral unit regressions plus PostgreSQL JSON integration coverage
+  exercise the security boundary.
 - [#2115](https://github.com/bookshelf/bookshelf/issues/2115) is resolved by
   Rebound's Lodash 4.18.1 baseline. Both production-only and full `npm audit`
-  were clean at this snapshot.
+  report zero findings as of 2026-09-08.
 - [#1843](https://github.com/bookshelf/bookshelf/issues/1843) is rejected. It
   embeds a direct database connection and credentials in a browser bundle;
   database access must remain behind a server-side API.
 
-Before a stable release, also port
-[#2108](https://github.com/bookshelf/bookshelf/pull/2108) by removing or
-replacing the abandoned external FlyptoX URL still present in the README.
+The related documentation-takeover item from
+[#2108](https://github.com/bookshelf/bookshelf/pull/2108) is resolved by
+commit `8b0eae4`, including a CI/prepublish regression guard.
 
 ## Ranked implementation queue
 
@@ -64,8 +61,8 @@ The order below ranks canonical work, not every duplicate report.
 
 ### 0. Release blockers
 
-1. #2122: object-valued fetch filter bypass.
-2. PR #2108: remove the unsafe abandoned documentation link.
+None currently identified. Keep the #2122 filter-bypass and PR #2108
+documentation guards in the release gate.
 
 ### 1. Persistence and transaction safety
 

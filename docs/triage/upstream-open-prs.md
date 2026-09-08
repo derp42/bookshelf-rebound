@@ -16,7 +16,7 @@ Rebound's newer dependency and test baseline.
 | [#2116 `returning` option in `save`](https://github.com/bookshelf/bookshelf/pull/2116) | P2 | REDESIGN/ADD | Selecting returned columns can be useful, but the patch clears model state and has no non-`RETURNING` contract. Design this as an explicit optimization with primary-key/state invariants and cross-dialect tests before adding it. |
 | [#2119 Pass options when fetching related data](https://github.com/bookshelf/bookshelf/pull/2119) | P2 | REDESIGN/ADD | Passing bounded context to relation factories enables tenant-aware relations, but arbitrary fetch options can couple authorization to mutable request data. Define a documented context channel and prove nested eager behavior; never present it as the database authorization boundary. |
 | [#2120 Update Knex version](https://github.com/bookshelf/bookshelf/pull/2120) | P0 | SUPERSEDED | Superseded by #2125/#2127/#2137 and Rebound's Knex 2.5.1 baseline. |
-| [#2125 Update Knex to 2.4.2 and audit](https://github.com/bookshelf/bookshelf/pull/2125) | P0 | SUPERSEDED | Its dependency advisory goal is included in #2137/Rebound. The separate Bookshelf filter-bypass behavior from #2122 still requires a source fix. |
+| [#2125 Update Knex to 2.4.2 and audit](https://github.com/bookshelf/bookshelf/pull/2125) | P0 | SUPERSEDED | Its dependency advisory goal is included in #2137/Rebound. Rebound commits `324d628` and `1780d92` separately resolve Bookshelf's #2122 filter-bypass behavior. |
 | [#2127 Upgrade Knex to 2.5.1](https://github.com/bookshelf/bookshelf/pull/2127) | P0 | SUPERSEDED | Rebound already pins its test peer to Knex 2.5.1. |
 | [#2128 Add deprecation notice](https://github.com/bookshelf/bookshelf/pull/2128) | P4 | REJECT | Rebound exists to continue maintenance and should describe its lineage and release-candidate status, not declare itself abandoned. |
 | [#2132 Add MariaDB support to README](https://github.com/bookshelf/bookshelf/pull/2132) | P3 | ALREADY_FIXED | Rebound's README and CI matrix already name and exercise MariaDB. |
@@ -25,7 +25,6 @@ Rebound's newer dependency and test baseline.
 
 ## Immediate extraction order
 
-1. Treat #2122's source-level filter bypass as a release-blocking fix; dependency updates do not resolve it.
-2. Port and extend #2093 for `belongsToMany().count()`.
-3. Rework #2096 around an explicit count alias instead of object-key order.
-4. Leave #2116 and #2119 as designed additions, not opportunistic merges.
+1. Port and extend #2093 for `belongsToMany().count()`.
+2. Rework #2096 around an explicit count alias instead of object-key order.
+3. Leave #2116 and #2119 as designed additions, not opportunistic merges.

@@ -1,6 +1,6 @@
 # Upstream open-issue triage: 2019-present
 
-Snapshot date: 2026-09-03.
+Snapshot date: 2026-09-03. Rebound disposition status is current through 2026-09-08.
 
 This inventory covers the GitHub REST search `repo:bookshelf/bookshelf is:issue is:open created:>=2019-01-01`. The API returned **53 issues**, and the table below contains **53 rows**: the row count equals the API count.
 
@@ -29,10 +29,10 @@ The review considered each issue's body, labels, and available comments; linked 
 | P2 | 12 |
 | P3 | 19 |
 | P4 | 5 |
-| FIX | 9 |
+| FIX | 8 |
 | ADD | 7 |
 | VERIFY | 2 |
-| ALREADY_FIXED | 6 |
+| ALREADY_FIXED | 7 |
 | DUPLICATE | 15 |
 | REJECT | 14 |
 | **Total rows** | **53** |
@@ -91,13 +91,13 @@ The review considered each issue's body, labels, and available comments; linked 
 | [#2115 — Bookshelf using vulnerable Lodash](https://github.com/bookshelf/bookshelf/issues/2115) | Dependency security | P0 | ALREADY_FIXED | The report requested at least Lodash 4.17.21. Rebound currently requires and locks Lodash 4.18.1, so that vulnerable version is gone. Keep automated dependency auditing; no source patch is needed for this report. |
 | [#2118 — Property fetchPage does not exist on type](https://github.com/bookshelf/bookshelf/issues/2118) | TypeScript compatibility | P2 | DUPLICATE | Another missing/incomplete declaration-surface report. Resolve with the first-party, test-compiled type definitions accepted under #2112, including `Model#fetchPage` and its pagination result metadata. |
 | [#2121 — Is Bookshelf actively maintained?](https://github.com/bookshelf/bookshelf/issues/2121) | Governance | P3 | ALREADY_FIXED | Rebound exists specifically as a public maintained continuation, publishes a Node 22/modern-Knex release candidate, documents governance, and explicitly solicits co-maintainers. Keep release/support status visible rather than making a code change. |
-| [#2122 — Limited SQL Injection Vulnerability in Bookshelf.js](https://github.com/bookshelf/bookshelf/issues/2122) | Security / filter bypass | P0 | FIX | Knex's underlying [GHSA-4jv9-3563-23j3](https://github.com/advisories/GHSA-4jv9-3563-23j3) is fixed in 2.4.0 and Rebound uses 2.5.1, which rejects object/array basic-WHERE values. However, current [`Sync.first`](../../lib/sync.js) silently omits plain-object attributes; a compile-only reproduction with `{secret:{name:'admin'}}` produces `select * from users limit ?` with no WHERE, preserving the disclosure class independently of Knex. If a PK exists, constrain strictly by it; otherwise reject non-scalar fetch constraints instead of dropping them. Add MySQL and query-compilation regressions for object and array payloads while preserving internal refresh of models containing JSON columns. |
+| [#2122 — Limited SQL Injection Vulnerability in Bookshelf.js](https://github.com/bookshelf/bookshelf/issues/2122) | Security / filter bypass | P0 | ALREADY_FIXED | Knex's underlying [GHSA-4jv9-3563-23j3](https://github.com/advisories/GHSA-4jv9-3563-23j3) is fixed in 2.4.0 and Rebound uses 2.5.1. Rebound commits `324d628` and `1780d92` also close Bookshelf's independent filter-drop path: unsafe object/array attributes fail before query execution when no scalar identity or explicit query exists, scalar primary-key refresh ignores already-loaded JSON state, and an explicit `Model#where` remains authoritative. Dialect-neutral unit coverage exercises object, array, primary-key, explicit-query, and JSON-state cases; PostgreSQL integration coverage exercises JSON fetch/refresh behavior. |
 | [#2123 — Specify subordinate database name through a model](https://github.com/bookshelf/bookshelf/issues/2123) | Schema / connection usage | P3 | ALREADY_FIXED | Current Sync supports per-operation `withSchema`; Knex also supports schema-qualified builders. Truly separate databases require separate connection pools/Bookshelf instances. Document that distinction rather than adding an ambiguous nested-database model property. |
 | [#2131 — MariaDB](https://github.com/bookshelf/bookshelf/issues/2131) | Documentation / database support | P3 | ALREADY_FIXED | Rebound's README explicitly lists MySQL/MariaDB, its Compose service uses MariaDB, and the inherited integration suite is part of the release-candidate support statement. Upstream PR #2129 was closed unmerged, but its requested outcome is present here. |
 
 ## Immediate implementation order
 
-1. **P0: #2122** — close the plain-object filter-drop path and add adversarial regression tests before a stable release.
+1. **P0: #2122 — resolved** by commits `324d628` and `1780d92`; retain the adversarial object/array, primary-key, explicit-query, and JSON refresh regressions.
 2. **P1 correctness cluster** — #2047 and #2091 prevent successful writes from being followed by wrong/failed refreshes; #1939, #1941, #1961, and #2046 repair supported relation paths; #2067 and #2092 replace fragile pagination-count reconstruction.
 3. **Small, low-risk fixes** — #2042 and #2114 documentation, then accepted configuration/projection/type work after behavior is specified.
 
