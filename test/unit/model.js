@@ -119,6 +119,78 @@ module.exports = function() {
             expect(parse).not.to.have.been.calledWith('12345');
           });
         });
+
+        it('preserves a SQLite insert for a model without a scalar id', () => {
+          const knex = require('knex')({
+            client: 'sqlite3',
+            connection: {filename: ':memory:'},
+            useNullAsDefault: true
+          });
+          const bookshelf = require(path.resolve(basePath, 'bookshelf'))(knex);
+          const Log = bookshelf.Model.extend({tableName: 'logs', idAttribute: null});
+          const queries = [];
+          const onQuery = function(query) {
+            queries.push(query.sql);
+          };
+          const log = new Log({message: 'written'});
+
+          return knex.schema
+            .createTable('logs', function(table) {
+              table.string('message');
+            })
+            .then(function() {
+              knex.on('query', onQuery);
+              return log.save();
+            })
+            .then(function(savedLog) {
+              knex.removeListener('query', onQuery);
+              expect(savedLog).to.equal(log);
+              expect(savedLog.id).to.equal(undefined);
+              expect(savedLog.attributes).to.eql({message: 'written'});
+              expect(queries).to.have.length(1);
+              expect(queries[0]).to.match(/^insert into /i);
+              return knex('logs');
+            })
+            .then(function(rows) {
+              expect(rows).to.eql([{message: 'written'}]);
+            })
+            .finally(function() {
+              knex.removeListener('query', onQuery);
+              return knex.destroy();
+            });
+        });
+
+        it('does not synthesize an id from an empty insert response', () => {
+          const model = new Model({message: 'written'});
+          model.idAttribute = null;
+          model.sync = () => {
+            return {
+              insert: () => Promise.resolve([])
+            };
+          };
+          model.refresh = sinon.stub().resolves(model);
+
+          return model.save(null, {method: 'insert'}).then(function(savedModel) {
+            expect(savedModel.attributes).to.eql({message: 'written'});
+            expect(savedModel.refresh).not.to.have.been.called;
+          });
+        });
+
+        it('uses a returned insert row without requiring a scalar id', () => {
+          const model = new Model({message: 'pending'});
+          model.idAttribute = null;
+          model.sync = () => {
+            return {
+              insert: () => Promise.resolve([{message: 'written', created_at: 'now'}])
+            };
+          };
+          model.refresh = sinon.stub().resolves(model);
+
+          return model.save(null, {method: 'insert'}).then(function(savedModel) {
+            expect(savedModel.attributes).to.eql({message: 'written', created_at: 'now'});
+            expect(savedModel.refresh).not.to.have.been.called;
+          });
+        });
       });
     });
 
