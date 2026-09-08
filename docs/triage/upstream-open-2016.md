@@ -8,6 +8,8 @@ This register covers every open `bookshelf/bookshelf` issue created from
 repo:bookshelf/bookshelf is:issue is:open created:2016-01-01..2016-12-31
 ```
 
+Rebound disposition status is current through 2026-09-08.
+
 The GitHub Search API returned 69 issues and this register contains exactly 69
 issue rows. Pull requests were excluded by `is:issue`. The review used issue
 bodies and comments, linked issues and pull requests, inherited Git history,
@@ -35,12 +37,13 @@ evidence that an issue was fixed.
 | Dimension | Counts |
 | --- | --- |
 | Priority | P0 0; P1 10; P2 20; P3 25; P4 14 |
-| Disposition | FIX 7; ADD 5; VERIFY 2; ALREADY_FIXED 19; DUPLICATE 9; REJECT 27 |
+| Disposition | FIX 6; ADD 5; VERIFY 2; ALREADY_FIXED 20; DUPLICATE 9; REJECT 27 |
 
 No P0 security or likely-data-loss report was found in this cohort. The five
-canonical P1 defects that still need code changes are #1135, #1159, #1325,
-#1442, and #1461; #1104 is consolidated into #1135. The other P1 reports have
-current implementation and test evidence for `ALREADY_FIXED`.
+canonical P1 defects selected at the snapshot were #1135, #1159, #1325,
+#1442, and #1461; #1104 is consolidated into #1135. #1325 is now implemented
+and regression-covered as `ALREADY_FIXED`; the remaining register rows retain
+their snapshot dispositions until the next full status reconciliation.
 
 ## Register
 
@@ -65,7 +68,7 @@ current implementation and test evidence for `ALREADY_FIXED`.
 | [#1244 Accept `.tx` where `.transacting` is allowed](https://github.com/bookshelf/bookshelf/issues/1244) | Transaction API | P4 | REJECT | A second spelling adds permanent option-normalization surface across every persistence method for little benefit and fragments examples/plugins. Preserve the Knex-aligned `transacting` contract. | No solution cross-reference; use JavaScript property shorthand `{transacting}`. |
 | [#1251 Adding plugins to docs](https://github.com/bookshelf/bookshelf/issues/1251) | Plugin docs | P3 | ALREADY_FIXED | README now has maintained and community plugin sections, including UUID, paranoia, modelbase, secure-password, and both bcrypt variants. It also warns that each plugin must be independently verified. | Solution: README “Bookshelf.js plugins” and “Community plugins”; originating addition commit `5835928`. |
 | [#1324 `morphTo` with different types and table names](https://github.com/bookshelf/bookshelf/issues/1324) | Polymorphic relations | P2 | ALREADY_FIXED | `morphTo` now accepts `[Target, morphValue]` candidates, and source docs plus integration tests cover a custom value such as `profile_pic` independently of the target table name. | Solution: `Model#morphTo` custom-morphValue API and corresponding integration tests. |
-| [#1325 `morphTo` relation breaks fetch](https://github.com/bookshelf/bookshelf/issues/1325) | Polymorphic relations | P1 | FIX | Reproduced now: refreshing an eagerly loaded morph target retains relation constraints and adds a second primary-key predicate with an undefined binding. Make refresh use the loaded target identity without stale parent relation constraints and add direct/eager tests. | Current failing path: `Model#refresh` plus `morphTo` relation state; related parsing issue [#1159](https://github.com/bookshelf/bookshelf/issues/1159). |
+| [#1325 `morphTo` relation breaks fetch](https://github.com/bookshelf/bookshelf/issues/1325) | Polymorphic relations | P1 | ALREADY_FIXED | Commit `924ab03` rebuilds eager relation metadata from each owning model instead of attaching collection-scoped metadata with an undefined `parentFk`. Commit `daf5a4e` permanently exercises two owners and proves that each eager `morphTo` target can be fetched and refreshed with its own correct parent key and result. | Related parsed-key fix: [#1159](https://github.com/bookshelf/bookshelf/issues/1159), implemented separately in `0f228b3`. |
 | [#1328 Inserting JSON Array produces error](https://github.com/bookshelf/bookshelf/issues/1328) | PostgreSQL JSON/support | P2 | REJECT | Knex cannot infer whether a JavaScript array targets a PostgreSQL array or JSON/JSONB column without schema metadata. Explicitly stringify JSON arrays in `format` or use a JSON-columns plugin; do not globally reinterpret arrays in Bookshelf. | Answered by [Knex #1349](https://github.com/knex/knex/issues/1349); reporter confirmed a newer `bookshelf-json-columns` resolved it. |
 | [#1331 `_knex[key].apply` error on attach with custom relation](https://github.com/bookshelf/bookshelf/issues/1331) | Through pivots | P2 | ALREADY_FIXED | A current SQLite-memory probe successfully attaches a plain pivot object through an explicit JoinModel and persists its extra field. Through-model lifecycle integration tests cover attach as well. | Solution: current `_processPivot`/`_processModelPivot`; historical pivot lifecycle work [#578](https://github.com/bookshelf/bookshelf/issues/578). |
 | [#1333 Upsert bug?](https://github.com/bookshelf/bookshelf/issues/1333) | Upsert/support | P2 | DUPLICATE | Same atomic conflict-upsert request as #55. `save()` remains identity-based; use modern Knex `insert().onConflict().merge()/ignore()` through `Model#query` rather than adding divergent Bookshelf dialect semantics. | Canonical/solution: [#55](https://github.com/bookshelf/bookshelf/issues/55); duplicate usage report [#1481](https://github.com/bookshelf/bookshelf/issues/1481). |

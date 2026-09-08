@@ -94,8 +94,8 @@ documentation guards in the release gate.
 ### 3. Relation and model lifecycle correctness
 
 1. #1159: repair parsed/formatted `morphTo` type lookup.
-2. #1325: remove stale/undefined constraints when refreshing an eagerly loaded
-   morph target.
+2. #1325: resolved by `924ab03` and guarded by `daf5a4e`; eager `morphTo`
+   targets now retain per-owner relation constraints for fetch and refresh.
 3. #1844: retain parent relation metadata through nested eager loading.
 4. #1939: serialize empty to-one relations consistently as `null`; includes
    #2016 and #2061.

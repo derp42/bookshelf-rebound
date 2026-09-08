@@ -23,6 +23,10 @@ Bookshelf Rebound begins as an independent, community-maintained continuation of
 - Reject object- or array-valued model attributes when they would otherwise be dropped from a fetch and broaden it to an unconstrained first-row query.
 - Remove the inherited `bookshelfjs.org` custom-domain claim and replace the abandoned FlyptoX website link with its GitHub repository.
 
+#### Bug fixes
+
+- Rebuild eager relation metadata from each owning model so related records retain the correct parent constraint, including `morphTo` targets that are fetched or refreshed after eager loading.
+
 **1.2.0** <small>_Jun 07, 2020_</small> - [Diff](https://github.com/bookshelf/bookshelf/compare/1.1.1...1.2.0)
 
 #### Features
