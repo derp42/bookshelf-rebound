@@ -108,6 +108,7 @@ module.exports = function() {
       .createTable('parents_targets', function(table) {
         table.integer('parent_id').notNullable();
         table.integer('target_id').notNullable();
+        table.string('label');
       })
       .createTable('custom_targets', function(table) {
         table.string('slug').primary();
@@ -306,6 +307,41 @@ module.exports = function() {
             });
         });
       });
+    });
+
+    it('keeps pivot helpers working on a cloned belongsToMany collection', function() {
+      const source = new Parent({id: 1}).targets();
+      const clone = source.clone();
+
+      expect(clone).not.to.equal(source);
+      expect(clone.relatedData).not.to.equal(source.relatedData);
+      expect(clone._handler).to.be.a('function');
+
+      return knex('parents_targets')
+        .where({parent_id: 1})
+        .update({label: null})
+        .then(function() {
+          return clone.attach(new Target({id: 12}));
+        })
+        .then(function() {
+          expect(clone.pluck('id')).to.eql([12]);
+          expect(source).to.have.length(0);
+          return clone.detach(12);
+        })
+        .then(function() {
+          expect(clone).to.have.length(0);
+          return clone.updatePivot({label: 'updated'}, {query: function(query) { query.where('target_id', 10); }});
+        })
+        .then(function(result) {
+          expect(result).to.equal(clone);
+          return knex('parents_targets').where({parent_id: 1}).orderBy('target_id');
+        })
+        .then(function(rows) {
+          expect(rows).to.eql([
+            {parent_id: 1, target_id: 10, label: 'updated'},
+            {parent_id: 1, target_id: 11, label: null}
+          ]);
+        });
     });
 
     describe('through detach', function() {
