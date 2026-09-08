@@ -185,6 +185,70 @@ module.exports = function() {
       });
     });
 
+    describe('first', function() {
+      it('uses only the primary key when the model also contains object or array attributes', function() {
+        var sync = new Sync(stubModel());
+
+        sync.select = function() {
+          expect(this.syncing.getWhereParts()).to.eql([{'testtable.id': 'pk'}]);
+        };
+
+        return sync.first({
+          id: 'pk',
+          settings: {access: 'admin'},
+          roles: ['admin']
+        });
+      });
+
+      it('rejects a plain-object fetch attribute when no primary key is present', function() {
+        var sync = new Sync(stubModel());
+        sync.select = sinon.spy();
+
+        return sync.first({settings: {access: 'admin'}}).then(
+          function() {
+            throw new Error('Expected the unsafe fetch attribute to be rejected');
+          },
+          function(error) {
+            expect(error).to.be.instanceOf(TypeError);
+            expect(error.message).to.contain('attribute "settings"');
+            sync.select.should.not.have.been.called;
+          }
+        );
+      });
+
+      it('rejects an array fetch attribute when no primary key is present', function() {
+        var sync = new Sync(stubModel());
+        sync.select = sinon.spy();
+
+        return sync.first({roles: ['admin']}).then(
+          function() {
+            throw new Error('Expected the unsafe fetch attribute to be rejected');
+          },
+          function(error) {
+            expect(error).to.be.instanceOf(TypeError);
+            expect(error.message).to.contain('attribute "roles"');
+            sync.select.should.not.have.been.called;
+          }
+        );
+      });
+
+      it('rejects an object-valued primary key', function() {
+        var sync = new Sync(stubModel());
+        sync.select = sinon.spy();
+
+        return sync.first({id: {value: 'pk'}}).then(
+          function() {
+            throw new Error('Expected the unsafe primary key to be rejected');
+          },
+          function(error) {
+            expect(error).to.be.instanceOf(TypeError);
+            expect(error.message).to.contain('attribute "id"');
+            sync.select.should.not.have.been.called;
+          }
+        );
+      });
+    });
+
     describe('update', function() {
       it("doesn't try to update the primary key if it hasn't changed", function() {
         var sync = new Sync(stubModel());

@@ -65,13 +65,26 @@ module.exports = function(bookshelf) {
         });
     });
 
-    it('Trying to fetch a model automatically excludes JSON column', function() {
-      return Command.forge({
-        unit_id: 1,
-        type: 'attack',
-        info: {test: 'blah'}
-      })
+    it('rejects a fetch that would silently discard a JSON constraint', function() {
+      return Command.forge({unit_id: 1, type: 'attack', info: {test: 'blah'}})
         .fetch()
+        .then(
+          function() {
+            throw new Error('Expected the JSON constraint to be rejected');
+          },
+          function(error) {
+            expect(error).to.be.instanceOf(TypeError);
+            expect(error.message).to.contain('attribute "info"');
+          }
+        );
+    });
+
+    it('can refresh a model that already contains a JSON column', function() {
+      return Command.forge({id: 1})
+        .fetch()
+        .then(function(command) {
+          return command.refresh();
+        })
         .then(function(command) {
           checkResponse(command.attributes, {
             id: 1,
