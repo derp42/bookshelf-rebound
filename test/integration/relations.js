@@ -1198,14 +1198,20 @@ module.exports = function(Bookshelf) {
 
         return a.fetch({withRelated: 'site'}).then(function(model) {
           equal(siteSyncCount, 0);
+          expect(model.relations).to.have.property('site');
+          expect(model.related('site')).to.be.an.instanceOf(Site);
+          expect(model.toJSON()).to.have.property('site', null);
         });
       });
 
       it('should not run a query for eagerly loaded `morphTo` relations if the foreign key is null', function() {
         var p = new Photo({id: 1});
 
-        return p.fetch({withRelated: 'imageable'}).then(function() {
+        return p.fetch({withRelated: 'imageable'}).then(function(model) {
           equal(siteSyncCount, 0);
+          expect(model.relations).to.have.property('imageable');
+          expect(model.related('imageable')).to.be.an.instanceOf(Site);
+          expect(model.toJSON()).to.have.property('imageable', null);
         });
       });
     });

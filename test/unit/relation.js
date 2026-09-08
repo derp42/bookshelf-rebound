@@ -133,7 +133,7 @@ module.exports = function() {
       })
       .createTable('tails', function(table) {
         table.increments();
-        table.integer('id_cat').notNullable();
+        table.integer('id_cat');
         table.string('color');
       })
       .createTable('morph_sites', function(table) {
@@ -500,6 +500,42 @@ module.exports = function() {
       return RawPhoto.fetchAll({withRelated: ['imageable']}).then(function(photos) {
         expect(photos.at(0).related('imageable').get('name')).to.equal('Parsed site');
       });
+    });
+
+    it('pairs null-foreign-key to-one relations without another query', function() {
+      var queries = [];
+      var onQuery = function(query) {
+        queries.push(query.sql);
+      };
+
+      return knex('tails')
+        .insert({id: 3, id_cat: null, color: 'gray'})
+        .then(function() {
+          return knex('parsed_photos').insert({id: 2, imageable_id: null, imageable_type: 'site'});
+        })
+        .then(function() {
+          knex.on('query', onQuery);
+          return new Tail({id: 3}).fetch({withRelated: ['cat']});
+        })
+        .then(function(tail) {
+          knex.removeListener('query', onQuery);
+          expect(queries).to.have.length(1);
+          expect(tail.relations).to.have.property('cat');
+          expect(tail.related('cat')).to.be.instanceOf(Cat);
+          expect(tail.toJSON()).to.have.property('cat', null);
+          queries = [];
+          knex.on('query', onQuery);
+          return new RawPhoto({id: 2}).fetch({withRelated: ['imageable']});
+        })
+        .finally(function() {
+          knex.removeListener('query', onQuery);
+        })
+        .then(function(photo) {
+          expect(queries).to.have.length(1);
+          expect(photo.relations).to.have.property('imageable');
+          expect(photo.related('imageable')).to.be.instanceOf(MorphSite);
+          expect(photo.toJSON()).to.have.property('imageable', null);
+        });
     });
 
     it('serializes missing eager-loaded to-one relations as null', function() {
