@@ -227,7 +227,7 @@ See the [contributing guide](.github/CONTRIBUTING.md#running-the-tests).
 
 ### Can I use Bookshelf outside of Node.js?
 
-While it primarily targets Node.js, all dependencies are browser compatible, and it could be adapted to work with other javascript environments supporting a sqlite3 database, by providing a custom [Knex adapter](http://knexjs.org/#Adapters). No such adapter exists though.
+No. Bookshelf Rebound is a server-side Node.js library. Do not bundle Bookshelf Rebound, Knex, a database driver, or database connection configuration into a browser application or an Electron renderer. Doing so exposes database credentials and direct database access to the client. Keep the ORM behind an authenticated server-side API.
 
 ### Which open-source projects are using Bookshelf?
 
