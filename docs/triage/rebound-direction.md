@@ -38,30 +38,31 @@ behavior.
 
 ### 2. Prove the compatibility claim
 
-The current CI claim and the actual coverage are narrower than they first
-appear:
+The declared compatibility range is now exercised by the full integration
+suite:
 
 | Surface | Current proof |
 | --- | --- |
-| Knex | Exactly 2.5.1; peer range excludes 3.x |
+| Knex | Exactly 2.5.1 and 3.3.0 |
 | PostgreSQL | PostgreSQL 16 through `pg` |
 | MariaDB | MariaDB 11.8 through Knex's legacy `mysql` client |
-| MySQL server | Not currently exercised |
-| `mysql2` | Not currently installed or exercised |
-| Knex native MariaDB client | Not currently exercised |
+| MySQL server | MySQL 8.4 through `mysql2` |
 | SQLite | `sqlite3` in memory |
 
-Run a compatibility spike before widening any declared range:
+Keep this matrix intact and run a compatibility spike before widening any
+declared range:
 
 1. Retain the Knex 2.5.1 + `mysql` + MariaDB baseline.
-2. Test Knex 2.5.1 + `mysql2` against MariaDB and an actual MySQL server.
-3. Test current Knex 3 + `mysql2` against MySQL.
-4. Test current Knex 3's native `mariadb` client against MariaDB.
-5. Test current Knex 3 with PostgreSQL/`pg` and SQLite/`sqlite3`.
+2. Retain Knex 2.5.1 and 3.3.0 with `mysql2` against MySQL 8.4.
+3. Retain both Knex lines with PostgreSQL/`pg` and SQLite/`sqlite3`.
+4. Test `mysql2` against MariaDB before recommending that pairing.
+5. Test Knex's native `mariadb` client separately before declaring it
+   supported.
 
-Do not declare Knex 3 support until this passes. Rebound currently observes
-private Knex statement state in several internals, and MySQL driver changes can
-alter large-number, date, authentication, pool, and result behavior.
+Rebound supports Knex 3.3.x because the declared paths now pass. It still
+observes private Knex statement state in several internals, so do not broaden
+the range automatically; MySQL driver changes can alter large-number, date,
+authentication, pool, and result behavior.
 
 ### 3. Replace inherited documentation drift
 

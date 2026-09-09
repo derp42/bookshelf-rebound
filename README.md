@@ -65,7 +65,7 @@ It's a lean object-relational mapper, allowing you to drop down to the raw Knex 
 
 You'll need to install a copy of [Knex](https://knexjs.org/), plus the database driver for your application. Use `mysql2` for new MySQL applications; the legacy `mysql` driver remains tested for existing MySQL/MariaDB applications.
 
-```js
+```sh
 $ npm install knex
 $ npm install bookshelf-rebound@next
 
@@ -136,7 +136,7 @@ Here is an example to get you started:
 
 ```js
 const knex = require('knex')({
-  client: 'mysql',
+  client: 'mysql2',
   connection: process.env.MYSQL_DATABASE_CONNECTION
 })
 const bookshelf = require('bookshelf-rebound')(knex)
@@ -144,7 +144,7 @@ const bookshelf = require('bookshelf-rebound')(knex)
 const User = bookshelf.model('User', {
   tableName: 'users',
   posts() {
-    return this.hasMany(Posts)
+    return this.hasMany(Post)
   }
 })
 
@@ -217,7 +217,7 @@ This is only an issue if you're eager loading data with load without first fetch
 
 ### My process won't exit after my script is finished, why?
 
-The issue here is that Knex, the database abstraction layer used by Bookshelf, uses connection pooling and thus keeps the database connection open. If you want your process to exit after your script has finished, you will have to call `.destroy(cb)` on the `knex` property of your `Bookshelf` instance or on the `Knex` instance passed during initialization. More information about connection pooling can be found over at the [Knex docs](http://knexjs.org/#Installation-pooling).
+The issue here is that Knex, the database abstraction layer used by Bookshelf, uses connection pooling and thus keeps the database connection open. If you want your process to exit after your script is finished, call `.destroy()` on the `knex` property of your Bookshelf instance or on the Knex instance passed during initialization. More information about connection pooling is available in the [Knex documentation](https://knexjs.org/guide/#configuration-options).
 
 ### How do I debug?
 
@@ -227,7 +227,7 @@ If you pass `debug: true` in the options object to your `knex` initialize call, 
 // Turning on debug mode for all queries
 const knex = require('knex')({
   debug: true,
-  client: 'mysql',
+  client: 'mysql2',
   connection: process.env.MYSQL_DATABASE_CONNECTION
 })
 const bookshelf = require('bookshelf-rebound')(knex)
@@ -238,17 +238,13 @@ new User({id: 1}).fetch({debug: true, withRelated: ['posts.tags']}).then(user =>
 })
 ```
 
-Sometimes you need to dive a bit further into the various calls and see what all is going on behind the scenes. You can use [node-inspector](https://github.com/dannycoates/node-inspector), which allows you to debug code with `debugger` statements like you would in the browser.
+For deeper debugging, start the application with Node's built-in inspector and attach Chrome DevTools or your editor:
 
-Bookshelf uses its own copy of the `bluebird` Promise library. You can read up [here](http://bluebirdjs.com/docs/api/promise.config.html) for more on debugging Promises.
-
-Adding the following block at the start of your application code will catch any errors not otherwise caught in the normal Promise chain handlers, which is very helpful in debugging:
-
-```js
-process.stderr.on('data', (data) => {
-  console.log(data)
-})
+```sh
+node --inspect app.js
 ```
+
+Bookshelf uses Bluebird-compatible promises to preserve the original callback and Promise contracts. Always handle rejected operations with `await`/`try`/`catch` or a terminal `.catch()`.
 
 ### How do I run the test suite?
 
@@ -258,12 +254,6 @@ See the [contributing guide](.github/CONTRIBUTING.md#running-the-tests).
 
 No. Bookshelf Rebound is a server-side Node.js library. Do not bundle Bookshelf Rebound, Knex, a database driver, or database connection configuration into a browser application or an Electron renderer. Doing so exposes database credentials and direct database access to the client. Keep the ORM behind an authenticated server-side API.
 
-### Which open-source projects are using Bookshelf?
+### Is Bookshelf Rebound ready for production?
 
-We found the following projects using Bookshelf, but there can be more:
-
-* [Ghost](https://ghost.org/) (A blogging platform) uses bookshelf. [[Link](https://github.com/TryGhost/Ghost/tree/master/core/server/models)]
-* [Soapee](http://soapee.com/) (Soap Making Community and Resources) uses bookshelf. [[Link](https://github.com/nazar/soapee-api/tree/master/src/models)]
-* [NodeZA](http://nodeza.co.za/) (Node.js social platform for developers in South Africa) uses bookshelf. [[Link](https://github.com/qawemlilo/nodeza/tree/master/models)]
-* [Sunday Cook](https://github.com/sunday-cooks/sunday-cook) (A social cooking event platform) uses bookshelf. [[Link](https://github.com/sunday-cooks/sunday-cook/tree/master/server/bookshelf)]
-* And of course, everything on [here](https://www.npmjs.com/browse/depended/bookshelf) use bookshelf too.
+The `2.0.0-rc` line is intended for compatibility testing and controlled production adoption with an exact version pin. Install `@next`, run your application's full test suite, and verify the database paths your application actually uses before deploying. Stable `2.0.0` will follow successful release-candidate use and completion of the documented release criteria.
