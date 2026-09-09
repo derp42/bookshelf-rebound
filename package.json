@@ -16,13 +16,14 @@
   ],
   "scripts": {
     "check:docs": "node scripts/check-documentation.js",
+    "check:package": "node scripts/check-package-install.js",
     "format": "prettier --write \"{lib,scripts,test}/**/*.js\"",
     "format:check": "prettier --check \"{lib,scripts,test}/**/*.js\"",
     "lint": "eslint bookshelf.js lib/",
     "cover": "npm run lint && nyc mocha --check-leaks -t 10000 -b test/index.js",
     "test": "npm run lint && npm run check:docs && mocha --check-leaks -t 10000 -b test/index.js",
     "test:unit": "mocha --check-leaks -t 10000 -b test/unit-index.js",
-    "prepublishOnly": "npm run lint && npm run check:docs && npm run test:unit"
+    "prepublishOnly": "npm run lint && npm run check:docs && npm run test:unit && npm run check:package"
   },
   "homepage": "https://github.com/derp42/bookshelf-rebound#readme",
   "repository": {
