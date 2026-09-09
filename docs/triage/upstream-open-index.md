@@ -96,7 +96,9 @@ documentation guards in the release gate.
 1. #1159: repair parsed/formatted `morphTo` type lookup.
 2. #1325: resolved by `924ab03` and guarded by `daf5a4e`; eager `morphTo`
    targets now retain per-owner relation constraints for fetch and refresh.
-3. #1844: retain parent relation metadata through nested eager loading.
+3. #1844: resolved by `924ab03` and guarded by the exact nested
+   `User -> devices.subscription` refresh regression; each nested relation now
+   retains metadata from its owning model.
 4. #1939: serialize empty to-one relations consistently as `null`; includes
    #2016 and #2061.
 5. #1961: retain `_handler` when cloning a `belongsToMany` collection.

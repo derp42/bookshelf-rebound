@@ -65,6 +65,20 @@ module.exports = function() {
       return this.hasMany(Tail, 'id_cat');
     }
   });
+  var Device;
+  const Subscription = bookshelf.Model.extend({tableName: 'subscriptions'});
+  const User = bookshelf.Model.extend({
+    tableName: 'users',
+    devices: function() {
+      return this.hasMany(Device, 'user_id');
+    }
+  });
+  Device = bookshelf.Model.extend({
+    tableName: 'devices',
+    subscription: function() {
+      return this.belongsTo(Subscription, 'subscription_id');
+    }
+  });
   const MorphSite = bookshelf.Model.extend({tableName: 'morph_sites'});
   const ParsedPhoto = bookshelf.Model.extend({
     tableName: 'parsed_photos',
@@ -139,6 +153,18 @@ module.exports = function() {
         table.integer('id_cat');
         table.string('color');
       })
+      .createTable('users', function(table) {
+        table.increments();
+      })
+      .createTable('devices', function(table) {
+        table.increments();
+        table.integer('user_id').notNullable();
+        table.integer('subscription_id').notNullable();
+      })
+      .createTable('subscriptions', function(table) {
+        table.increments();
+        table.string('name');
+      })
       .createTable('morph_sites', function(table) {
         table.increments();
         table.string('name');
@@ -182,6 +208,15 @@ module.exports = function() {
           {id: 1, imageable_id: 1, imageable_type: 'site'},
           {id: 3, imageable_id: 2, imageable_type: 'site'}
         ]);
+      })
+      .then(function() {
+        return knex('users').insert({id: 27});
+      })
+      .then(function() {
+        return knex('subscriptions').insert({id: 12, name: 'Annual'});
+      })
+      .then(function() {
+        return knex('devices').insert({id: 121, user_id: 27, subscription_id: 12});
       });
   });
 
@@ -494,6 +529,25 @@ module.exports = function() {
         .then(function(tails) {
           expect(tails[0].attributes).to.eql({id: 1, id_cat: 1, color: 'white'});
           expect(tails[1].attributes).to.eql({id: 2, id_cat: 2, color: 'brown'});
+        });
+    });
+
+    it('retains parent metadata for nested eager relations', function() {
+      return new User({id: 27})
+        .fetch({withRelated: ['devices.subscription']})
+        .then(function(user) {
+          const device = user.related('devices').at(0);
+          const subscription = device.related('subscription');
+
+          expect(device.attributes).to.eql({id: 121, user_id: 27, subscription_id: 12});
+          expect(subscription.relatedData.parentId).to.equal(121);
+          expect(subscription.relatedData.parentAttributes).to.eql(device.attributes);
+          expect(subscription.relatedData.parentFk).to.equal(12);
+
+          return subscription.refresh();
+        })
+        .then(function(subscription) {
+          expect(subscription.attributes).to.eql({id: 12, name: 'Annual'});
         });
     });
 
