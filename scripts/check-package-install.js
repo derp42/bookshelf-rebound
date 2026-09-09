@@ -38,7 +38,13 @@ try {
   const packOutput = runNpm(['pack', root, '--pack-destination', temporaryRoot, '--json', '--ignore-scripts'], {
     cwd: root
   });
-  const packResult = JSON.parse(packOutput)[0];
+  const parsedPackOutput = JSON.parse(packOutput);
+  const packResults = Array.isArray(parsedPackOutput) ? parsedPackOutput : Object.values(parsedPackOutput);
+
+  assert.strictEqual(packResults.length, 1, 'Expected npm pack to describe exactly one package.');
+
+  const [packResult] = packResults;
+  assert.ok(packResult && Array.isArray(packResult.files), 'Expected npm pack to return package file metadata.');
   const unexpectedFiles = packResult.files
     .map((file) => file.path)
     .filter((file) => !allowedFiles.has(file) && !file.startsWith('lib/'));

@@ -14,7 +14,8 @@ declared modern compatibility matrix into the public package.
 
 #### Maintenance
 
-- Add a clean-consumer check that packs, inspects, installs, and initializes the exact npm artifact before publishing.
+- Add a clean-consumer check that packs, inspects, installs, and initializes the exact npm artifact across npm 10 and npm 12 pack metadata formats.
+- Run artifact inspection before the publish lifecycle so npm never recursively packs the package being published.
 - Approve only the reviewed `sqlite3` development install script required by the npm 12 release gate.
 - Replace stale starter, debugger, pooling, and adoption guidance with current Node.js and Rebound behavior.
 - Reconcile all accepted P1 upstream work with its implementation and regression evidence.
