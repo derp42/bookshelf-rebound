@@ -1,8 +1,9 @@
 ## Change Log
 
-**2.0.0-rc.1** <small>_Unreleased_</small>
+**2.0.0-rc.2** <small>_Unreleased_</small>
 
-Bookshelf Rebound begins as an independent, community-maintained continuation of Bookshelf.js.
+This release candidate brings the audited upstream correctness queue and the
+declared modern compatibility matrix into the public package.
 
 #### Compatibility
 
@@ -13,10 +14,9 @@ Bookshelf Rebound begins as an independent, community-maintained continuation of
 
 #### Maintenance
 
-- Refresh runtime and development dependencies, based on the modernization work contributed upstream in [bookshelf/bookshelf#2137](https://github.com/bookshelf/bookshelf/pull/2137).
-- Replace the retired Travis configuration with GitHub Actions on current Node.js releases and PostgreSQL/MariaDB services.
-- Add explicit security, governance, contribution, and provenance-based release policies.
-- Publish under the new `bookshelf-rebound` package name while preserving original MIT attribution and Git history.
+- Add a clean-consumer check that packs, inspects, installs, and initializes the exact npm artifact before publishing.
+- Replace stale starter, debugger, pooling, and adoption guidance with current Node.js and Rebound behavior.
+- Reconcile all accepted P1 upstream work with its implementation and regression evidence.
 
 #### Security
 
@@ -25,8 +25,35 @@ Bookshelf Rebound begins as an independent, community-maintained continuation of
 
 #### Bug fixes
 
-- Rebuild eager relation metadata from each owning model so related records retain the correct parent constraint, including `morphTo` targets that are fetched or refreshed after eager loading.
+- Prevent arbitrary post-update hydration, transaction-option mistakes, explicit-query pollution, incomplete through detaches, and no-ID insert refresh failures.
+- Correct PostgreSQL JSON eager loading, schema-qualified refresh, fetch-hook projections, grouped counts, pagination counts, and relation counts.
+- Rebuild eager relation metadata from each owning model so direct, collection, nested, and `morphTo` targets retain the correct parent constraint for fetch, refresh, and save.
+- Serialize missing to-one relations as `null` and preserve pivot handlers on cloned many-to-many collections.
 - Retain the private key needed to pair ordinary projected `hasMany`, `hasOne`, and `belongsTo` eager loads, then remove it before parsing, events, and serialization.
+
+#### Documented contracts
+
+- Define transaction event timing and keep external side effects after commit.
+- Define same-instance mutation and replacement behavior for repeated overlapping `load()` calls.
+- Provide a tested, isolated model-factory pattern for multiple database connections.
+
+**2.0.0-rc.1** <small>_Sep 03, 2026_</small>
+
+Bookshelf Rebound begins as an independent, community-maintained continuation of Bookshelf.js.
+
+#### Compatibility
+
+- Preserve the Bookshelf `1.2.0` application API as the drop-in compatibility target.
+- Require Node.js 22 or newer.
+- Establish Knex 2.5.1 as the initial tested peer baseline.
+- Verify PostgreSQL 16, MariaDB 11.8, and SQLite3 in CI.
+
+#### Maintenance
+
+- Refresh runtime and development dependencies, based on the modernization work contributed upstream in [bookshelf/bookshelf#2137](https://github.com/bookshelf/bookshelf/pull/2137).
+- Replace the retired Travis configuration with GitHub Actions on current Node.js releases and PostgreSQL/MariaDB services.
+- Add explicit security, governance, contribution, and provenance-based release policies.
+- Publish under the new `bookshelf-rebound` package name while preserving original MIT attribution and Git history.
 
 **1.2.0** <small>_Jun 07, 2020_</small> - [Diff](https://github.com/bookshelf/bookshelf/compare/1.1.1...1.2.0)
 

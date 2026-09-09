@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-rebound",
-  "version": "2.0.0-rc.1",
+  "version": "2.0.0-rc.2",
   "description": "A maintained, drop-in continuation of the Bookshelf.js ORM for modern Node.js and Knex",
   "main": "bookshelf.js",
   "type": "commonjs",
