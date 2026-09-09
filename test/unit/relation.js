@@ -551,6 +551,26 @@ module.exports = function() {
         });
     });
 
+    it('replaces an overlapping relation path on a later load', function() {
+      var original;
+
+      return new User({id: 27})
+        .fetch()
+        .then(function(user) {
+          original = user;
+          return user.load(['devices.subscription']);
+        })
+        .then(function(user) {
+          expect(user).to.equal(original);
+          expect(user.related('devices').at(0).relations).to.have.property('subscription');
+          return user.load(['devices']);
+        })
+        .then(function(user) {
+          expect(user).to.equal(original);
+          expect(user.related('devices').at(0).relations).not.to.have.property('subscription');
+        });
+    });
+
     it('eager loads morphTo using parsed type and id attributes', function() {
       return ParsedPhoto.fetchAll({withRelated: ['imageable']}).then(function(photos) {
         const photo = photos.at(0);

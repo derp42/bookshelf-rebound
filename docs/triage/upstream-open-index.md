@@ -108,12 +108,13 @@ documentation guards in the release gate.
 1. #1495: verify BIGINT/string identity preservation with the supported MySQL
    driver modes.
 2. #2089: reproduce typed catches on real zero-row update/delete paths.
-3. #1519 and #2111: document that save events occur inside the transaction and
-   post-commit side effects belong after the outer transaction resolves.
-4. #1823: define mutation/reentrancy behavior for concurrent or repeated
-   `load()` calls.
-5. #1895: document safe per-Bookshelf-instance model factories for multi-tenant
-   connections; never hot-swap a shared model's Knex reference.
+3. #1519 and #2111: resolved by the transaction-event rollback regression and
+   guide; save events occur inside the transaction, while post-commit side
+   effects belong after the outer transaction resolves.
+4. #1823: resolved by documenting the mutable same-instance contract and
+   testing that a later overlapping `load()` replaces the earlier path.
+5. #1895: resolved by the tested per-Bookshelf-instance model factory; never
+   hot-swap a shared model's Knex reference.
 
 P2-P4 additions and documentation work remain in the source registers and
 should start only after the release blockers and supported-path P1 defects are

@@ -130,6 +130,46 @@ const Post = bookshelf.model('Post', {
 })
 ```
 
+### Transactions and external side effects
+
+Model lifecycle events run as part of the operation that triggers them. When a save uses `transacting`, events such as `created` and `saved` fire after the statement succeeds but before the surrounding transaction commits. They can therefore fire for work that is later rolled back.
+
+Perform email, webhook, queue, and other external side effects only after the outer transaction promise resolves:
+
+```js
+const user = await bookshelf.transaction(async (transacting) => {
+  return User.forge({email}).save(null, {transacting})
+})
+
+// The transaction has committed here.
+await sendWelcomeEmail(user)
+```
+
+Queries intentionally performed inside a lifecycle event must reuse `options.transacting` to observe the same transaction.
+
+### Mutable models and repeated loads
+
+Bookshelf models are mutable. Methods such as `load()` update and resolve with the same model instance, and event handlers receive that live instance. Loading an overlapping relation path again replaces that path with the newest result; for example, `load('jobs')` after `load('jobs.organization')` replaces the loaded `jobs` collection with models that do not contain `organization`.
+
+Do not run concurrent or independently scoped loads against the same model instance. Fetch separate instances for independent control flows, or complete one load before handing the model to another operation.
+
+### Multiple database connections
+
+Model constructors and registries belong to the Bookshelf/Knex instance that created them. For multiple databases or tenant-specific pools, define a factory and create a separate model set for each connection:
+
+```js
+function createModels(knex) {
+  const bookshelf = require('bookshelf-rebound')(knex)
+  const User = bookshelf.model('User', {tableName: 'users'})
+  return {bookshelf, User}
+}
+
+const tenantA = createModels(tenantAKnex)
+const tenantB = createModels(tenantBKnex)
+```
+
+Cache and dispose those pools according to application policy. Never replace `bookshelf.knex` on a shared model registry while concurrent work may still use it.
+
 ## Examples
 
 Here is an example to get you started:
