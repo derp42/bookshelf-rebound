@@ -57,7 +57,9 @@ commit `8b0eae4`, including a CI/prepublish regression guard.
 
 ## Ranked implementation queue
 
-The order below ranks canonical work, not every duplicate report.
+The order below records the completed release-candidate queue, not every
+duplicate report. Each item retains its priority order and implementation
+evidence so later changes do not silently reopen the defect.
 
 ### 0. Release blockers
 
@@ -66,48 +68,51 @@ documentation guards in the release gate.
 
 ### 1. Persistence and transaction safety
 
-1. #2091: prevent arbitrary/undefined auto-refresh after a non-identity or
-   multi-row update; includes #2086, #2100, and #2101.
-2. #1571: reject the common `transaction` typo and invalid `transacting`
-   handles so writes do not silently escape the intended transaction.
-3. #730: stop model attributes from polluting an explicitly constrained fetch.
-4. #1135: fix detach-all and missing-ID behavior for through models; includes
-   #1104 and #2009.
-5. #853: preserve successful inserts for models without a scalar primary key;
-   includes #1364's response-handling fixture.
-6. #2046: fix invalid relation constraint state when saving a model loaded
-   through a collection relation.
+1. #2091: resolved by `e50dad8`; non-identity or multi-row updates do not
+   auto-refresh from an arbitrary row. Includes #2086, #2100, and #2101.
+2. #1571: resolved by `07b038c`; the common `transaction` typo and invalid
+   `transacting` handles fail before query execution.
+3. #730: resolved by `1780d92`; explicit query constraints are authoritative.
+4. #1135: resolved by `d99c911`; through detach handles all rows, explicit or
+   missing IDs, hooks, and transactions. Includes #1104 and #2009.
+5. #853: resolved by `7b3ab3b`; successful inserts without a scalar primary
+   key retain their state. Includes #1364's response-handling fixture.
+6. #2046: resolved by `924ab03`; relation constraints are rebuilt from each
+   owning model before a child loaded through a collection is saved.
 
 ### 2. Query, PostgreSQL, and pagination correctness
 
-1. #1941: do not apply an unconditional `DISTINCT table.*` that breaks
-   PostgreSQL `json` columns.
-2. #2047: retain `withSchema` through automatic post-save refresh.
-3. #1442: honor projections added by fetch event handlers.
-4. #2092: count a cloned grouped subquery for pagination; includes #2067's
-   `groupByRaw` crash, and should coordinate with PR #2096.
-5. #1461: return the defined empty grouped-count result instead of dereferencing
-   a missing row.
-6. #1075: apply the pivot constraint to plain `belongsToMany().count()`; port
-   and extend PR #2093.
+1. #1941: resolved by `68167c9`; unjoined PostgreSQL `json` relations no longer
+   receive an unconditional `DISTINCT table.*`.
+2. #2047: resolved by `fb945bd`; `withSchema` reaches automatic post-save
+   refresh.
+3. #1442: resolved by `8ad0995`; fetch-event projections remain authoritative.
+4. #2092: resolved by `f9e5f1e`; pagination counts a cloned grouped subquery,
+   including #2067's `groupByRaw` case.
+5. #1461: resolved by `786b256`; empty grouped counts return zero.
+6. #1075: resolved by `a081854`; plain `belongsToMany().count()` applies its
+   pivot constraint and custom keys.
 
 ### 3. Relation and model lifecycle correctness
 
-1. #1159: repair parsed/formatted `morphTo` type lookup.
+1. #1159: resolved by `0f228b3`; parsed/formatted `morphTo` keys resolve
+   without reparsing raw attributes.
 2. #1325: resolved by `924ab03` and guarded by `daf5a4e`; eager `morphTo`
    targets now retain per-owner relation constraints for fetch and refresh.
 3. #1844: resolved by `924ab03` and guarded by the exact nested
    `User -> devices.subscription` refresh regression; each nested relation now
    retains metadata from its owning model.
-4. #1939: serialize empty to-one relations consistently as `null`; includes
-   #2016 and #2061.
-5. #1961: retain `_handler` when cloning a `belongsToMany` collection.
+4. #1939: resolved by `1584e9d` and `a935809`; empty to-one relations serialize
+   consistently as `null`. Includes #2016 and #2061.
+5. #1961: resolved by `cd81056`; cloned `belongsToMany` collections retain
+   their pivot handler.
 
 ### 4. Verification and documented safety contracts
 
-1. #1495: verify BIGINT/string identity preservation with the supported MySQL
-   driver modes.
-2. #2089: reproduce typed catches on real zero-row update/delete paths.
+1. #1495: resolved by `1b8d3fa` and `ff88bdc`; supported MySQL driver modes
+   preserve configured BIGINT/string identities in integration coverage.
+2. #2089: resolved by `bfd9322`; zero-row update/delete paths preserve typed
+   catch behavior.
 3. #1519 and #2111: resolved by the transaction-event rollback regression and
    guide; save events occur inside the transaction, while post-commit side
    effects belong after the outer transaction resolves.
@@ -116,9 +121,9 @@ documentation guards in the release gate.
 5. #1895: resolved by the tested per-Bookshelf-instance model factory; never
    hot-swap a shared model's Knex reference.
 
-P2-P4 additions and documentation work remain in the source registers and
-should start only after the release blockers and supported-path P1 defects are
-resolved.
+The release-blocking and supported-path P1 queue is complete. P2-P4 additions,
+documentation, and performance work remain in the source registers and can now
+proceed without delaying controlled release-candidate adoption.
 
 ## Canonical groups
 
@@ -143,5 +148,5 @@ resolved.
 | #2092 grouped pagination count | #2067; related PR #2096 | Replace Knex private-statement reconstruction with a grouped subquery design. |
 | #2104 explicit graph persistence | #83, #1979 | Future explicit transactional API only; no silent cascading `save()`. |
 
-Related but distinct refresh/metadata fixtures #1325, #1844, and #2046 should be
-implemented as one hardening wave while retaining separate regression tests.
+Related but distinct refresh/metadata fixtures #1325, #1844, and #2046 were
+implemented as one hardening wave and retain separate regression tests.

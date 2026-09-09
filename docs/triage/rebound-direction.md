@@ -31,10 +31,11 @@ and the later
 
 ### 1. Finish supported-path correctness
 
-Complete the P0/P1 implementation queue in
-[the consolidated index](upstream-open-index.md). Keep one canonical defect per
-commit and require a reproduction plus regression test before changing
-behavior.
+The P0/P1 implementation queue in
+[the consolidated index](upstream-open-index.md) is complete for the current
+release candidate. Keep its focused regressions in the release gate. For new
+reports, retain one canonical defect per commit and require a reproduction plus
+regression test before changing behavior.
 
 ### 2. Prove the compatibility claim
 
