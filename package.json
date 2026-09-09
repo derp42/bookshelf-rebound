@@ -46,6 +46,9 @@
     "datamapper",
     "active record"
   ],
+  "allowScripts": {
+    "sqlite3": true
+  },
   "dependencies": {
     "bluebird": "^3.7.2",
     "create-error": "~0.3.1",
